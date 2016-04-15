@@ -1,11 +1,24 @@
 {
   "name": "bluebird-promisell",
   "version": "0.1.0",
-  "description": "",
+  "description": "Functor, Applicative, Traversable, Foldable instances for bluebird Promise",
   "main": "index.js",
   "scripts": {
     "test": "mocha test.js"
   },
+  "keywords": [
+    "Promise",
+    "bluebird",
+    "functional",
+    "lift",
+    "map",
+    "sequence",
+    "traverse",
+    "fold",
+    "pipe",
+    "first",
+    "second"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zhangchiqing/bluebird-promisell.git"

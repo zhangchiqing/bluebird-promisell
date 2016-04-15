@@ -1,0 +1,27 @@
+{
+  "name": "bluebird-promisell",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhangchiqing/bluebird-promisell.git"
+  },
+  "author": "Leo Zhang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zhangchiqing/bluebird-promisell/issues"
+  },
+  "homepage": "https://github.com/zhangchiqing/bluebird-promisell#readme",
+  "peerDependencies": {
+    "bluebird": "^2.1.0"
+  },
+  "devDependencies": {
+    "bluebird": "^3.3.5",
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5"
+  }
+}

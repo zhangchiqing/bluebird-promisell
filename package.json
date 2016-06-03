@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly --report html",
-    "test:doc": "node_modules/.bin/doctest --prefix . --nodejs '--harmony' --module commonjs index.js ",
+    "test:doc": "node_modules/.bin/doctest --prefix . --nodejs '--harmony' --module commonjs index.js",
     "codecov": "npm run test && codecov",
-    "docs": "npm run test:doc && cp README.md.header README.md && transcribe --url './{filename}#L{line}' -- index.js >> README.md",
+    "docs": "npm run test && cp README.md.header README.md && transcribe --url './{filename}#L{line}' -- index.js >> README.md",
     "release-major": "xyz --repo git@github.com:fantasyland/fantasy-birds.git --increment major",
     "release-minor": "xyz --repo git@github.com:fantasyland/fantasy-birds.git --increment minor",
     "release-patch": "xyz --repo git@github.com:fantasyland/fantasy-birds.git --increment patch"

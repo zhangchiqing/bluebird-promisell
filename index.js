@@ -139,12 +139,12 @@ exports.traversep = function(fn) {
   return pipe(map(fn), exports.sequencep);
 };
 
-exports.pipep = function() {
-  var fns = toArray(arguments);
+// pipep :: [(a -> Promise b), (b -> Promise c), ... (m -> Promise n)] -> a -> Promise n
+exports.pipep = function(pipes) {
   return function(a) {
     return fold(function(accp, fn) {
       return accp.then(fn);
-    }, exports.purep(a), fns);
+    }, exports.purep(a), pipes);
   };
 };
 

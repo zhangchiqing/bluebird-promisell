@@ -230,7 +230,7 @@ describe('traversep', function() {
 
 describe('pipep', function() {
   it('should resolve', function() {
-    return pipep(resolveLater, resolveLater)(1)
+    return pipep([resolveLater, resolveLater])(1)
     .then(function(r) {
       expect(r).to.equal(9);
     });

@@ -1,6 +1,6 @@
 {
   "name": "bluebird-promisell",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Functor, Applicative, Traversable, Foldable instances for bluebird Promise",
   "main": "index.js",
   "scripts": {

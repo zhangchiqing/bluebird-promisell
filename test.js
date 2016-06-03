@@ -5,7 +5,7 @@ var liftp = require('./index').liftp;
 var firstp = require('./index').firstp;
 var secondp = require('./index').secondp;
 var purep = require('./index').purep;
-var mapp = require('./index').mapp;
+var fmapp = require('./index').fmapp;
 var sequencep = require('./index').sequencep;
 var traversep = require('./index').traversep;
 var pipep = require('./index').pipep;
@@ -17,6 +17,14 @@ var Promise = require('bluebird');
 var add = function(a, b) {
   return a + b;
 };
+
+describe('purep', function() {
+  it('should resolve', function() {
+    return purep(3).then(function(r) {
+      expect(r).to.equal(3);
+    });
+  });
+});
 
 describe('liftp', function() {
   it('should resolve', function() {
@@ -175,9 +183,9 @@ describe('validation', function() {
   });
 });
 
-describe('mapp', function() {
+describe('fmapp', function() {
   it('should resolve', function() {
-    return mapp(function(x) { return x * 3; })(Promise.resolve(1))
+    return fmapp(function(x) { return x * 3; })(Promise.resolve(1))
     .then(function(r) {
       expect(r).to.equal(3);
     });
@@ -230,7 +238,7 @@ describe('traversep', function() {
 
 describe('pipep', function() {
   it('should resolve', function() {
-    return pipep(resolveLater, resolveLater)(1)
+    return pipep([resolveLater, resolveLater])(1)
     .then(function(r) {
       expect(r).to.equal(9);
     });

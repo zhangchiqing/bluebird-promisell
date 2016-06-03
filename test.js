@@ -5,7 +5,7 @@ var liftp = require('./index').liftp;
 var firstp = require('./index').firstp;
 var secondp = require('./index').secondp;
 var purep = require('./index').purep;
-var mapp = require('./index').mapp;
+var fmapp = require('./index').fmapp;
 var sequencep = require('./index').sequencep;
 var traversep = require('./index').traversep;
 var pipep = require('./index').pipep;
@@ -183,9 +183,9 @@ describe('validation', function() {
   });
 });
 
-describe('mapp', function() {
+describe('fmapp', function() {
   it('should resolve', function() {
-    return mapp(function(x) { return x * 3; })(Promise.resolve(1))
+    return fmapp(function(x) { return x * 3; })(Promise.resolve(1))
     .then(function(r) {
       expect(r).to.equal(3);
     });

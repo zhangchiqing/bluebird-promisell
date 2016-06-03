@@ -77,14 +77,6 @@ var map = function(f) {
   };
 };
 
-var mapIndexed = function(f) {
-  return function(arr) {
-    return fold(function(memo, item) {
-      return [memo[0].concat([f(item, memo[1])]), memo[1] + 1];
-    }, [[], 0], arr);
-  };
-};
-
 // > filter(function(x) { return x > 0; })([1,2,-1])
 // [1,2]
 var filter = function(f) {
@@ -130,28 +122,7 @@ exports.fmapp = function(fn) {
 // . promise
 // . [3, 4]
 exports.sequencep = function(arr) {
-  if (Promise.all) { return Promise.all(arr); }
-
-  var ps = [],
-      len = arr.length,
-      failed = false;
-
-  return new Promise(function(resolve, reject) {
-    mapIndexed(function(p, index) {
-      p.then(function(pv) {
-        if (failed) { return ; }
-        ps[index] = pv;
-        len--;
-        if (len === 0) {
-          resolve(ps);
-        }
-      }, function(err) {
-        failed = true;
-        reject(err);
-      });
-
-    })(arr);
-  });
+  return Promise.all(arr);
 };
 
 // # traversep :: (a -> Promise b) -> Array a -> Promise Array b

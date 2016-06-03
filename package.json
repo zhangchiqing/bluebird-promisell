@@ -29,7 +29,10 @@
     "type": "git",
     "url": "git+https://github.com/zhangchiqing/bluebird-promisell.git"
   },
-  "author": "Leo Zhang",
+  "files": [
+    "index.js"
+  ],
+  "author": "Leo Zhang <zhangchiqing@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/zhangchiqing/bluebird-promisell/issues"

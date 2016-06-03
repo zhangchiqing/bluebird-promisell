@@ -6,7 +6,7 @@ var Promise = require('bluebird');
 //.
 //. Takes any value, returns a resolved Promise with that value
 //.
-//. ```
+//. ```js
 //. > purep(3).then(console.log)
 //. promise
 //. 3
@@ -104,9 +104,11 @@ var pipe = function() {
 //
 //. Transforms a Promise of value a into a Promise of value b
 //
+//. ```js
 //. > fmapp(function(a) { return a + 3; }, Promise.resolve(4)).then(console.log)
 //. promise
 //. 7
+//. ```
 exports.fmapp = function(fn) {
   return function(p) {
     return p.then(fn);
@@ -118,9 +120,11 @@ exports.fmapp = function(fn) {
 //
 //. Transforms an array of Promise of value a into a Promise of array of a.
 //
+//. ```js
 //. > sequencep([Promise.resolve(3), Promise.resolve(4)]).then(console.log)
 //. promise
 //. [3, 4]
+//. ```
 exports.sequencep = function(arr) {
   return Promise.all(arr);
 };
@@ -130,10 +134,12 @@ exports.sequencep = function(arr) {
 //. Maps a function that takes a value a and returns a Promise of value b over an array of value a,
 //. then use `sequencep` to transform the array of Promise b into a Promise of array b
 //
+//. ```js
 //. > traversep(function(a) { return Promise.resolve(a + 3); })(
 //.     [2, 3, 4])
 //. promise
 //. [5, 6, 7]
+//. ```
 exports.traversep = function(fn) {
   return pipe(map(fn), exports.sequencep);
 };
@@ -142,12 +148,14 @@ exports.traversep = function(fn) {
 //
 //. Performs left-to-right composition of an array of Promise-returning functions.
 //
+//. ```js
 //. > pipep([
 //.     function(a) { return Promise.resolve(a + 3); },
 //.     function(b) { return Promise.resolve(b * 10); },
 //.   ])(6);
 //. promise
 //. 90
+//. ```
 exports.pipep = function(pipes) {
   return function(a) {
     return fold(function(accp, fn) {
@@ -163,12 +171,14 @@ exports.pipep = function(pipes) {
 //. Takes a function, which takes n arguments and return a value x, and n Promises,
 //. return a Promise of value x
 //
+//. ```js
 //. > liftp(function(a, b, c) { return (a + b) * c; })(
 //.     Promise.resolve(3),
 //.     Promise.resolve(4),
 //.     Promise.resolve(5))
 //. promise
 //. 35
+//. ```
 exports.liftp = function(fn) {
   return function() {
     return exports.fmapp(apply(fn))(exports.sequencep(toArray(arguments)));
@@ -180,6 +190,7 @@ exports.liftp = function(fn) {
 //. Takes two Promises and return the first if both of them are resolved
 //. alias <* firstp
 //
+//. ```js
 //. > firstp(Promise.resolve(1), Promise.resolve(2))
 //. promise
 //. 1
@@ -187,6 +198,7 @@ exports.liftp = function(fn) {
 //. > firstp(Promise.resolve(1), Promise.reject(new Error(3)))
 //. promise
 //. Error 3
+//. ```
 exports.firstp = exports.liftp(always);
 
 //# secondp :: Promise a -> Promise b -> Promise b
@@ -194,6 +206,7 @@ exports.firstp = exports.liftp(always);
 //. Takes two Promises and return the second if both of them are resolved
 //. alias *> secondp
 //
+//. ```js
 //. > secondp(Promise.resolve(1), Promise.resolve(2))
 //. promise
 //. 2
@@ -201,6 +214,7 @@ exports.firstp = exports.liftp(always);
 //. > secondp(Promise.resolve(1), Promise.reject(new Error(3)))
 //. promise
 //. Error 3
+//. ```
 exports.secondp = exports.liftp(always(id));
 
 //# filterp :: (a -> Boolean) -> Array Promise a -> Promise Array a
@@ -208,12 +222,14 @@ exports.secondp = exports.liftp(always(id));
 //. Takes a predicate and an array of Promise a, returns a Promise of array a
 //. which satisfy the predicate.
 //
+//. ```js
 //. > filterp(function(a) { return a > 3; })([
 //.     Promise.resolve(2),
 //.     Promise.resolve(3),
 //.     Promise.resolve(4)])
 //. promise
 //. [4]
+//. ```
 exports.filterp = function(fn) {
   return pipe(exports.sequencep, exports.fmapp(filter(fn)));
 };
@@ -225,9 +241,11 @@ exports.filterp = function(fn) {
 //. and the current value from the array, and then waiting until the promise resolved,
 //. then passing the result to the next call.
 //
+//. ```js
 //. > foldp(function(b, a) { return Promise.resolve(b + a); })(1)([2, 3, 4])
 //. promise
 //. 10
+//. ```
 exports.foldp = function(fn) {
   return function(init) {
     return function(arr) {

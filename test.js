@@ -18,6 +18,14 @@ var add = function(a, b) {
   return a + b;
 };
 
+describe('purep', function() {
+  it('should resolve', function() {
+    return purep(3).then(function(r) {
+      expect(r).to.equal(3);
+    });
+  });
+});
+
 describe('liftp', function() {
   it('should resolve', function() {
     return liftp(add)(Promise.resolve(1), Promise.resolve(2))

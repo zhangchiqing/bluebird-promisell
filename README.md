@@ -55,8 +55,8 @@ promise
 
 <h3 name="liftp"><code><a href="./index.js#L167">liftp :: (a -> b -> ... n -> x)</a></code></h3>
 
-Takes a function, which takes n arguments and return a value x, and n Promises,
-return a Promise of value x
+Takes a function so that this function is able to read input values from resolved Promises,
+and return a Promise that will resolve with the output value of that function.
 
 ```js
 > liftp(function(a, b, c) { return (a + b) * c; })(

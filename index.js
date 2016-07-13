@@ -168,8 +168,8 @@ exports.pipep = function(pipes) {
 //         -> Promise a -> Promise b -> ... -> Promise n
 //         -> Promise x
 //
-//. Takes a function, which takes n arguments and return a value x, and n Promises,
-//. return a Promise of value x
+//. Takes a function so that this function is able to read input values from resolved Promises,
+//. and return a Promise that will resolve with the output value of that function.
 //
 //. ```js
 //. > liftp(function(a, b, c) { return (a + b) * c; })(

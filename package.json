@@ -39,7 +39,7 @@
   },
   "homepage": "https://github.com/zhangchiqing/bluebird-promisell#readme",
   "peerDependencies": {
-    "bluebird": "^2.1.0"
+    "bluebird": ">=2.1.0"
   },
   "devDependencies": {
     "bluebird": "^3.3.5",

@@ -11,11 +11,19 @@ var traversep = require('./index').traversep;
 var pipep = require('./index').pipep;
 var filterp = require('./index').filterp;
 var foldp = require('./index').foldp;
+var mapError = require('./index').mapError;
+var resolveError = require('./index').resolveError;
 
 var Promise = require('bluebird');
 
 var add = function(a, b) {
   return a + b;
+};
+
+var promiseShouldFail = function(promise) {
+  return new Promise(function(resolve, reject) {
+    promise.then(reject).catch(resolve);
+  });
 };
 
 describe('purep', function() {
@@ -270,6 +278,35 @@ describe('foldp', function() {
     })(1)([2, 3, 4])
     .then(function(r) {
       expect(r).to.equal(10);
+    });
+  });
+});
+
+describe('mapError', function() {
+  it('should fail with transformed error', function() {
+    var transformer = function(error) {
+      var newError = new Error('new Error');
+      newError.status = 400;
+      return newError;
+    };
+
+    var shouldFail = mapError(transformer)(Promise.reject(new Error('error')));
+    return promiseShouldFail(shouldFail).then(function(error) {
+      expect(error.status).to.equal(400);
+      expect(error.message).to.equal('new Error');
+    });
+  });
+});
+
+describe('resolveError', function() {
+  it('should resolve', function() {
+    var recoverFn = function(error) {
+      return 'resolved';
+    };
+
+    return resolveError(recoverFn)(Promise.reject(new Error('error')))
+    .then(function(r) {
+      expect(r).to.equal('resolved');
     });
   });
 });

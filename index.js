@@ -259,3 +259,41 @@ exports.foldp = function(fn) {
     };
   };
 };
+
+//# mapError :: (Error -> Error) -> Promise a -> Promise a
+//
+//. Transform the rejected Error.
+//
+//. ```js
+//. > mapError(function(err) {
+//.     var newError = new Error(err.message);
+//.     newError.status = 400;
+//.     return newError;
+//.   })(Promise.reject(new Error('Not Found')));
+//. rejected promise
+//. ```
+exports.mapError = function(fn) {
+  return function(p) {
+    return p.catch(function(error) {
+      var newError = fn(error);
+      return Promise.reject(newError);
+    });
+  };
+};
+
+//# resolveError :: (Error -> b) -> Promise a -> Promise b
+//
+//. Recover from a rejected Promise
+//
+//. ```js
+//. > resolveError(function(err) {
+//.     return false;
+//.   });
+//. ```
+//. promise
+//. false
+exports.resolveError = function(fn) {
+  return function(p) {
+    return p.catch(fn);
+  };
+};

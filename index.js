@@ -185,6 +185,24 @@ exports.liftp = function(fn) {
   };
 };
 
+//# liftp1 :: (a -> b) -> Promise a -> Promise b
+//
+//. Takes a function and apply this function to the resolved Promise value, and return
+//. a Promise that will resolve with the output of that function.
+//
+//. ```js
+//. > liftp1(function(user) {
+//.     return user.email;
+//.   })(Promise.resolve({ email: 'abc@example.com' }));
+//. promise
+//. abc@example.com
+//. ```
+exports.liftp1 = function(fn) {
+  return function(p) {
+    return p.then(fn);
+  };
+};
+
 //# firstp :: Promise a -> Promise b -> Promise a
 //
 //. Takes two Promises and return the first if both of them are resolved
@@ -295,5 +313,35 @@ exports.mapError = function(fn) {
 exports.resolveError = function(fn) {
   return function(p) {
     return p.catch(fn);
+  };
+};
+
+//# toPromise :: (a -> Boolean) -> (a -> Error) -> Promise a -> Promise a
+//
+//. Use a predict to check if
+//
+//. ```js
+//. var validateGreaterThan0 = toPromise(function(a) {
+//.   return a > 0;
+//. }, function(a) {
+//.   return new Error('value is not greater than 0');
+//. });
+//
+//. > validateGreaterThan0(10)
+//. promise
+//. 10
+//.
+//. > validateGreaterThan0(-10)
+//. rejected promise
+//. Error 'value is not greater than 0'
+//. ```
+exports.toPromise = function(predict, toError) {
+  return function(a) {
+    var valid = predict(a);
+    if (valid) {
+      return Promise.resolve(a);
+    } else {
+      return Promise.reject(toError(a));
+    }
   };
 };

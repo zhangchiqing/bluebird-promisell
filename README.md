@@ -67,7 +67,20 @@ promise
 35
 ```
 
-<h3 name="firstp"><code><a href="./index.js#L188">firstp :: Promise a -> Promise b -> Promise a</a></code></h3>
+<h3 name="liftp1"><code><a href="./index.js#L188">liftp1 :: (a -> b) -> Promise a -> Promise b</a></code></h3>
+
+Takes a function and apply this function to the resolved Promise value, and return
+a Promise that will resolve with the output of that function.
+
+```js
+> liftp1(function(user) {
+    return user.email;
+  })(Promise.resolve({ email: 'abc@example.com' }));
+promise
+abc@example.com
+```
+
+<h3 name="firstp"><code><a href="./index.js#L206">firstp :: Promise a -> Promise b -> Promise a</a></code></h3>
 
 Takes two Promises and return the first if both of them are resolved
 alias <* firstp
@@ -82,7 +95,7 @@ promise
 Error 3
 ```
 
-<h3 name="secondp"><code><a href="./index.js#L204">secondp :: Promise a -> Promise b -> Promise b</a></code></h3>
+<h3 name="secondp"><code><a href="./index.js#L222">secondp :: Promise a -> Promise b -> Promise b</a></code></h3>
 
 Takes two Promises and return the second if both of them are resolved
 alias *> secondp
@@ -97,7 +110,7 @@ promise
 Error 3
 ```
 
-<h3 name="filterp"><code><a href="./index.js#L220">filterp :: (a -> Boolean) -> Array Promise a -> Promise Array a</a></code></h3>
+<h3 name="filterp"><code><a href="./index.js#L238">filterp :: (a -> Boolean) -> Array Promise a -> Promise Array a</a></code></h3>
 
 Takes a predicate and an array of Promise a, returns a Promise of array a
 which satisfy the predicate.
@@ -111,7 +124,7 @@ promise
 [4]
 ```
 
-<h3 name="foldp"><code><a href="./index.js#L237">foldp :: (b -> a -> Promise b) -> b -> Array a -> Promise b</a></code></h3>
+<h3 name="foldp"><code><a href="./index.js#L255">foldp :: (b -> a -> Promise b) -> b -> Array a -> Promise b</a></code></h3>
 
 Returns a Promise of value b by iterating over an array of value a, successively
 calling the iterator function and passing it an accumulator value of value b,
@@ -122,4 +135,49 @@ then passing the result to the next call.
 > foldp(function(b, a) { return Promise.resolve(b + a); })(1)([2, 3, 4])
 promise
 10
+```
+
+<h3 name="mapError"><code><a href="./index.js#L281">mapError :: (Error -> Error) -> Promise a -> Promise a</a></code></h3>
+
+Transform the rejected Error.
+
+```js
+> mapError(function(err) {
+    var newError = new Error(err.message);
+    newError.status = 400;
+    return newError;
+  })(Promise.reject(new Error('Not Found')));
+rejected promise
+```
+
+<h3 name="resolveError"><code><a href="./index.js#L302">resolveError :: (Error -> b) -> Promise a -> Promise b</a></code></h3>
+
+Recover from a rejected Promise
+
+```js
+> resolveError(function(err) {
+    return false;
+  });
+```
+promise
+false
+
+<h3 name="toPromise"><code><a href="./index.js#L319">toPromise :: (a -> Boolean) -> (a -> Error) -> Promise a -> Promise a</a></code></h3>
+
+Use a predict to check if
+
+```js
+var validateGreaterThan0 = toPromise(function(a) {
+  return a > 0;
+}, function(a) {
+  return new Error('value is not greater than 0');
+});
+
+> validateGreaterThan0(10)
+promise
+10
+
+> validateGreaterThan0(-10)
+rejected promise
+Error 'value is not greater than 0'
 ```

@@ -53,7 +53,7 @@ promise
 90
 ```
 
-<h3 name="liftp"><code><a href="./index.js#L167">liftp :: (a -> b -> ... n -> x)</a></code></h3>
+<h3 name="liftp"><code><a href="./index.js#L167">liftp :: (a -> b -> ... n -> x) -> Promise a -> Promise b -> ... -> Promise n -> Promise x</a></code></h3>
 
 Takes a function so that this function is able to read input values from resolved Promises,
 and return a Promise that will resolve with the output value of that function.
@@ -67,7 +67,7 @@ promise
 35
 ```
 
-<h3 name="liftp1"><code><a href="./index.js#L188">liftp1 :: (a -> b) -> Promise a -> Promise b</a></code></h3>
+<h3 name="liftp1"><code><a href="./index.js#L186">liftp1 :: (a -> b) -> Promise a -> Promise b</a></code></h3>
 
 Takes a function and apply this function to the resolved Promise value, and return
 a Promise that will resolve with the output of that function.
@@ -80,7 +80,7 @@ promise
 abc@example.com
 ```
 
-<h3 name="firstp"><code><a href="./index.js#L206">firstp :: Promise a -> Promise b -> Promise a</a></code></h3>
+<h3 name="firstp"><code><a href="./index.js#L204">firstp :: Promise a -> Promise b -> Promise a</a></code></h3>
 
 Takes two Promises and return the first if both of them are resolved
 alias <* firstp
@@ -95,7 +95,7 @@ promise
 Error 3
 ```
 
-<h3 name="secondp"><code><a href="./index.js#L222">secondp :: Promise a -> Promise b -> Promise b</a></code></h3>
+<h3 name="secondp"><code><a href="./index.js#L220">secondp :: Promise a -> Promise b -> Promise b</a></code></h3>
 
 Takes two Promises and return the second if both of them are resolved
 alias *> secondp
@@ -110,7 +110,7 @@ promise
 Error 3
 ```
 
-<h3 name="filterp"><code><a href="./index.js#L238">filterp :: (a -> Boolean) -> Array Promise a -> Promise Array a</a></code></h3>
+<h3 name="filterp"><code><a href="./index.js#L236">filterp :: (a -> Boolean) -> Array Promise a -> Promise Array a</a></code></h3>
 
 Takes a predicate and an array of Promise a, returns a Promise of array a
 which satisfy the predicate.
@@ -124,7 +124,7 @@ promise
 [4]
 ```
 
-<h3 name="foldp"><code><a href="./index.js#L255">foldp :: (b -> a -> Promise b) -> b -> Array a -> Promise b</a></code></h3>
+<h3 name="foldp"><code><a href="./index.js#L253">foldp :: (b -> a -> Promise b) -> b -> Array a -> Promise b</a></code></h3>
 
 Returns a Promise of value b by iterating over an array of value a, successively
 calling the iterator function and passing it an accumulator value of value b,
@@ -137,7 +137,7 @@ promise
 10
 ```
 
-<h3 name="mapError"><code><a href="./index.js#L281">mapError :: (Error -> Error) -> Promise a -> Promise a</a></code></h3>
+<h3 name="mapError"><code><a href="./index.js#L279">mapError :: (Error -> Error) -> Promise a -> Promise a</a></code></h3>
 
 Transform the rejected Error.
 
@@ -150,7 +150,7 @@ Transform the rejected Error.
 rejected promise
 ```
 
-<h3 name="resolveError"><code><a href="./index.js#L302">resolveError :: (Error -> b) -> Promise a -> Promise b</a></code></h3>
+<h3 name="resolveError"><code><a href="./index.js#L300">resolveError :: (Error -> b) -> Promise a -> Promise b</a></code></h3>
 
 Recover from a rejected Promise
 
@@ -162,7 +162,7 @@ Recover from a rejected Promise
 promise
 false
 
-<h3 name="toPromise"><code><a href="./index.js#L319">toPromise :: (a -> Boolean) -> (a -> Error) -> Promise a -> Promise a</a></code></h3>
+<h3 name="toPromise"><code><a href="./index.js#L317">toPromise :: (a -> Boolean) -> (a -> Error) -> Promise a -> Promise a</a></code></h3>
 
 Use a predict to check if
 

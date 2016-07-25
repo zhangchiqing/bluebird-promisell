@@ -164,9 +164,7 @@ exports.pipep = function(pipes) {
   };
 };
 
-//# liftp :: (a -> b -> ... n -> x)
-//         -> Promise a -> Promise b -> ... -> Promise n
-//         -> Promise x
+//# liftp :: (a -> b -> ... n -> x) -> Promise a -> Promise b -> ... -> Promise n -> Promise x
 //
 //. Takes a function so that this function is able to read input values from resolved Promises,
 //. and return a Promise that will resolve with the output value of that function.

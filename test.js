@@ -2,6 +2,7 @@
 
 var expect = require('chai').expect;
 var liftp = require('./index').liftp;
+var liftp1 = require('./index').liftp1;
 var firstp = require('./index').firstp;
 var secondp = require('./index').secondp;
 var purep = require('./index').purep;
@@ -13,6 +14,7 @@ var filterp = require('./index').filterp;
 var foldp = require('./index').foldp;
 var mapError = require('./index').mapError;
 var resolveError = require('./index').resolveError;
+var toPromise = require('./index').toPromise;
 
 var Promise = require('bluebird');
 
@@ -70,6 +72,14 @@ describe('liftp', function() {
     });
   });
 
+});
+
+describe('liftp1', function() {
+  it('resolve', function() {
+    return liftp1(function(user) {
+      return user.email;
+    })(Promise.resolve({ email: 'abc@example.com' }));
+  });
 });
 
 describe('firstp', function() {
@@ -307,6 +317,28 @@ describe('resolveError', function() {
     return resolveError(recoverFn)(Promise.reject(new Error('error')))
     .then(function(r) {
       expect(r).to.equal('resolved');
+    });
+  });
+});
+
+describe('toPromise', function() {
+  var validateGreaterThan0 = toPromise(function(a) {
+    return a > 0;
+  }, function(a) {
+    return new Error('value is not greater than 0');
+  });
+
+  it('should resolve', function() {
+    return validateGreaterThan0(10)
+    .then(function(r) {
+      expect(r).to.equal(10);
+    });
+  });
+
+  it('should fail', function() {
+    return promiseShouldFail(validateGreaterThan0(-10))
+    .then(function(error) {
+      expect(error.message).to.equal('value is not greater than 0');
     });
   });
 });

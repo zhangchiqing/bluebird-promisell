@@ -45,29 +45,22 @@ describe('liftp', function() {
   });
 
   it('fail first', function() {
-    return liftp(add)(Promise.reject(1), Promise.resolve(2))
-    .then(function() {
-      throw new Error('should fail');
-    }, function(r) {
+    return promiseShouldFail(liftp(add)(Promise.reject(1), Promise.resolve(2)))
+    .then(function(r) {
       expect(r).to.equal(1);
     });
   });
 
   it('fail second', function() {
-    return liftp(add)(Promise.resolve(1), Promise.reject(2))
-    .then(function() {
-      throw new Error('should fail');
-    }, function(r) {
+    return promiseShouldFail(liftp(add)(Promise.resolve(1), Promise.reject(2)))
+    .then(function(r) {
       expect(r).to.equal(2);
     });
   });
 
   it('fail both', function() {
-    return liftp(add)(Promise.reject(1), Promise.reject(2))
-    .then(function() {
-      throw new Error('should fail');
-    })
-    .catch(function(r) {
+    return promiseShouldFail(liftp(add)(Promise.reject(1), Promise.reject(2)))
+    .then(function(r) {
       expect(r).to.equal(1);
     });
   });
@@ -91,31 +84,22 @@ describe('firstp', function() {
   });
 
   it('fail first', function() {
-    return firstp(Promise.reject(1), Promise.resolve(2))
-    .then(function() {
-      throw new Error('should fail');
-    })
-    .catch(function(r) {
+    return promiseShouldFail(firstp(Promise.reject(1), Promise.resolve(2)))
+    .then(function(r) {
       expect(r).to.equal(1);
     });
   });
 
   it('fail second', function() {
-    return firstp(Promise.resolve(1), Promise.reject(2))
-    .then(function() {
-      throw new Error('should fail');
-    })
-    .catch(function(r) {
+    return promiseShouldFail(firstp(Promise.resolve(1), Promise.reject(2)))
+    .then(function(r) {
       expect(r).to.equal(2);
     });
   });
 
   it('fail both', function() {
-    return firstp(Promise.reject(1), Promise.reject(2))
-    .then(function() {
-      throw new Error('should fail');
-    })
-    .catch(function(r) {
+    return promiseShouldFail(firstp(Promise.reject(1), Promise.reject(2)))
+    .then(function(r) {
       expect(r).to.equal(1);
     });
   });
@@ -130,33 +114,24 @@ describe('secondp', function() {
   });
 
   it('fail first', function() {
-    return secondp(Promise.reject(1), Promise.resolve(2))
-    .then(function() {
-      throw new Error('should fail');
-    })
-    .catch(function(r) {
+    return promiseShouldFail(secondp(Promise.reject(1), Promise.resolve(2)))
+    .then(function(r) {
       expect(r).to.equal(1);
     });
   });
 
 
   it('fail second', function() {
-    return secondp(Promise.resolve(1), Promise.reject(2))
-    .then(function() {
-      throw new Error('should fail');
-    })
-    .catch(function(r) {
+    return promiseShouldFail(secondp(Promise.resolve(1), Promise.reject(2)))
+    .then(function(r) {
       expect(r).to.equal(2);
     });
   });
 
 
   it('fail both', function() {
-    return secondp(Promise.reject(1), Promise.reject(2))
-    .then(function() {
-      throw new Error('should fail');
-    })
-    .catch(function(r) {
+    return promiseShouldFail(secondp(Promise.reject(1), Promise.reject(2)))
+    .then(function(r) {
       expect(r).to.equal(1);
     });
   });
@@ -189,13 +164,10 @@ describe('validation', function() {
 
   it('should fail if mising field', function() {
     var q = { email: 'a@b.c', password: undefined };
-    return liftp(query)(
+    return promiseShouldFail(liftp(query)(
       secondp(notEmpty('email')(q.email), purep(q.email)),
-      secondp(notEmpty('password')(q.password), purep(q.password)))
-    .then(function() {
-      throw new Error('should fail');
-    })
-    .catch(function(r) {
+      secondp(notEmpty('password')(q.password), purep(q.password))))
+    .then(function(r) {
       expect(r).to.equal('Field password cannot be empty');
     });
   });
@@ -219,19 +191,15 @@ describe('sequencep', function() {
   });
 
   it('should fail one', function() {
-    return sequencep([Promise.reject(1), Promise.resolve(2)])
-    .then(function() {
-      throw new Error('should fail');
-    }, function(r) {
+    return promiseShouldFail(sequencep([Promise.reject(1), Promise.resolve(2)]))
+    .then(function(r) {
       expect(r).to.equal(1);
     });
   });
 
   it('should fail both', function() {
-    return sequencep([Promise.reject(1), Promise.reject(2)])
-    .then(function() {
-      throw new Error('should fail');
-    }, function(r) {
+    return promiseShouldFail(sequencep([Promise.reject(1), Promise.reject(2)]))
+    .then(function(r) {
       expect(r).to.equal(1);
     });
   });

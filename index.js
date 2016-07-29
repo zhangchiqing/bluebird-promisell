@@ -195,11 +195,7 @@ exports.liftp = function(fn) {
 //. promise
 //. abc@example.com
 //. ```
-exports.liftp1 = function(fn) {
-  return function(p) {
-    return p.then(fn);
-  };
-};
+exports.liftp1 = exports.fmapp;
 
 //# firstp :: Promise a -> Promise b -> Promise a
 //

@@ -314,9 +314,13 @@ exports.resolveError = function(fn) {
   };
 };
 
-//# toPromise :: (a -> Boolean) -> (a -> Error) -> Promise a -> Promise a
+//# toPromise :: (a -> Boolean) -> (a -> Error) -> a -> Promise a
 //
-//. Use a predict to check if
+//. Takes a `predict` function and a `toError` function, return a curried
+//. function that can take a value and return a Promise.
+//. If this value passes the predict, then use the toError function to return
+//. a reject promise with the returned Error.
+//. Otherwise, return a resolved Promise with that value.
 //
 //. ```js
 //. var validateGreaterThan0 = toPromise(function(a) {

@@ -314,9 +314,9 @@ exports.resolveError = function(fn) {
 //
 //. Takes a `predict` function and a `toError` function, return a curried
 //. function that can take a value and return a Promise.
-//. If this value passes the predict, then use the toError function to return
-//. a reject promise with the returned Error.
-//. Otherwise, return a resolved Promise with that value.
+//. If this value passes the predict, then return a resolved Promise with
+//. that value, otherwise pass the value to the `toError` function, and
+//. return a rejected Promise with the output of the `toError` function.
 //
 //. ```js
 //. var validateGreaterThan0 = toPromise(function(a) {

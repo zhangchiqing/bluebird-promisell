@@ -146,7 +146,7 @@ exports.pipep = function(pipes) {
 //. > liftp(function(a, b, c) { return (a + b) * c; })(
 //.     Promise.resolve(3),
 //.     Promise.resolve(4),
-//.     Promise.resolve(5))
+//.     Promise.resolve(5));
 //. promise
 //. 35
 //. ```
@@ -227,6 +227,8 @@ exports.filterp = function(fn) {
 //. calling the iterator function and passing it an accumulator value of value b,
 //. and the current value from the array, and then waiting until the promise resolved,
 //. then passing the result to the next call.
+//.
+//. foldp resolves promises sequentially
 //
 //. ```js
 //. > foldp(function(b, a) { return Promise.resolve(b + a); })(1)([2, 3, 4])

@@ -8,7 +8,7 @@ promise
 3
 ```
 
-<h3 name="fmapp"><code><a href="./index.js#L103">fmapp :: (a -> b) -> Promise a -> Promise b</a></code></h3>
+<h3 name="fmapp"><code><a href="./index.js#L76">fmapp :: (a -> b) -> Promise a -> Promise b</a></code></h3>
 
 Transforms a Promise of value a into a Promise of value b
 
@@ -18,7 +18,7 @@ promise
 7
 ```
 
-<h3 name="sequencep"><code><a href="./index.js#L119">sequencep :: Array Promise a -> Promise Array a</a></code></h3>
+<h3 name="sequencep"><code><a href="./index.js#L92">sequencep :: Array Promise a -> Promise Array a</a></code></h3>
 
 Transforms an array of Promise of value a into a Promise of array of a.
 
@@ -28,7 +28,7 @@ promise
 [3, 4]
 ```
 
-<h3 name="traversep"><code><a href="./index.js#L132">traversep :: (a -> Promise b) -> Array a -> Promise Array b</a></code></h3>
+<h3 name="traversep"><code><a href="./index.js#L105">traversep :: (a -> Promise b) -> Array a -> Promise Array b</a></code></h3>
 
 Maps a function that takes a value a and returns a Promise of value b over an array of value a,
 then use `sequencep` to transform the array of Promise b into a Promise of array b
@@ -40,7 +40,7 @@ promise
 [5, 6, 7]
 ```
 
-<h3 name="pipep"><code><a href="./index.js#L147">pipep :: [(a -> Promise b), (b -> Promise c), ... (m -> Promise n)] -> a -> Promise n</a></code></h3>
+<h3 name="pipep"><code><a href="./index.js#L120">pipep :: [(a -> Promise b), (b -> Promise c), ... (m -> Promise n)] -> a -> Promise n</a></code></h3>
 
 Performs left-to-right composition of an array of Promise-returning functions.
 
@@ -53,7 +53,7 @@ promise
 90
 ```
 
-<h3 name="liftp"><code><a href="./index.js#L167">liftp :: (a -> b -> ... n -> x) -> Promise a -> Promise b -> ... -> Promise n -> Promise x</a></code></h3>
+<h3 name="liftp"><code><a href="./index.js#L140">liftp :: (a -> b -> ... n -> x) -> Promise a -> Promise b -> ... -> Promise n -> Promise x</a></code></h3>
 
 Takes a function so that this function is able to read input values from resolved Promises,
 and return a Promise that will resolve with the output value of that function.
@@ -62,12 +62,12 @@ and return a Promise that will resolve with the output value of that function.
 > liftp(function(a, b, c) { return (a + b) * c; })(
     Promise.resolve(3),
     Promise.resolve(4),
-    Promise.resolve(5))
+    Promise.resolve(5));
 promise
 35
 ```
 
-<h3 name="liftp1"><code><a href="./index.js#L186">liftp1 :: (a -> b) -> Promise a -> Promise b</a></code></h3>
+<h3 name="liftp1"><code><a href="./index.js#L159">liftp1 :: (a -> b) -> Promise a -> Promise b</a></code></h3>
 
 Takes a function and apply this function to the resolved Promise value, and return
 a Promise that will resolve with the output of that function.
@@ -80,7 +80,7 @@ promise
 abc@example.com
 ```
 
-<h3 name="firstp"><code><a href="./index.js#L200">firstp :: Promise a -> Promise b -> Promise a</a></code></h3>
+<h3 name="firstp"><code><a href="./index.js#L173">firstp :: Promise a -> Promise b -> Promise a</a></code></h3>
 
 Takes two Promises and return the first if both of them are resolved
 alias <* firstp
@@ -95,7 +95,7 @@ promise
 Error 3
 ```
 
-<h3 name="secondp"><code><a href="./index.js#L216">secondp :: Promise a -> Promise b -> Promise b</a></code></h3>
+<h3 name="secondp"><code><a href="./index.js#L191">secondp :: Promise a -> Promise b -> Promise b</a></code></h3>
 
 Takes two Promises and return the second if both of them are resolved
 alias *> secondp
@@ -110,7 +110,7 @@ promise
 Error 3
 ```
 
-<h3 name="filterp"><code><a href="./index.js#L232">filterp :: (a -> Boolean) -> Array Promise a -> Promise Array a</a></code></h3>
+<h3 name="filterp"><code><a href="./index.js#L207">filterp :: (a -> Boolean) -> Array Promise a -> Promise Array a</a></code></h3>
 
 Takes a predicate and an array of Promise a, returns a Promise of array a
 which satisfy the predicate.
@@ -124,12 +124,14 @@ promise
 [4]
 ```
 
-<h3 name="foldp"><code><a href="./index.js#L249">foldp :: (b -> a -> Promise b) -> b -> Array a -> Promise b</a></code></h3>
+<h3 name="foldp"><code><a href="./index.js#L224">foldp :: (b -> a -> Promise b) -> b -> Array a -> Promise b</a></code></h3>
 
 Returns a Promise of value b by iterating over an array of value a, successively
 calling the iterator function and passing it an accumulator value of value b,
 and the current value from the array, and then waiting until the promise resolved,
 then passing the result to the next call.
+
+foldp resolves promises sequentially
 
 ```js
 > foldp(function(b, a) { return Promise.resolve(b + a); })(1)([2, 3, 4])
@@ -137,7 +139,7 @@ promise
 10
 ```
 
-<h3 name="mapError"><code><a href="./index.js#L275">mapError :: (Error -> Error) -> Promise a -> Promise a</a></code></h3>
+<h3 name="mapError"><code><a href="./index.js#L252">mapError :: (Error -> Error) -> Promise a -> Promise a</a></code></h3>
 
 Transform the rejected Error.
 
@@ -150,7 +152,7 @@ Transform the rejected Error.
 rejected promise
 ```
 
-<h3 name="resolveError"><code><a href="./index.js#L296">resolveError :: (Error -> b) -> Promise a -> Promise b</a></code></h3>
+<h3 name="resolveError"><code><a href="./index.js#L273">resolveError :: (Error -> b) -> Promise a -> Promise b</a></code></h3>
 
 Recover from a rejected Promise
 
@@ -162,7 +164,7 @@ Recover from a rejected Promise
 promise
 false
 
-<h3 name="toPromise"><code><a href="./index.js#L313">toPromise :: (a -> Boolean) -> (a -> Error) -> a -> Promise a</a></code></h3>
+<h3 name="toPromise"><code><a href="./index.js#L290">toPromise :: (a -> Boolean) -> (a -> Error) -> a -> Promise a</a></code></h3>
 
 Takes a `predict` function and a `toError` function, return a curried
 function that can take a value and return a Promise.

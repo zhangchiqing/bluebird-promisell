@@ -262,7 +262,7 @@ exports.foldp = function(fn) {
   return function(init) {
     return function(arr) {
       if (!arr.length) {
-        return init;
+        return exports.purep(init);
       }
 
       return fn(init, arr[0]).then(function(b) {

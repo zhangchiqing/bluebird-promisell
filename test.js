@@ -247,6 +247,18 @@ describe('filterp', function() {
       expect(arr).to.eql([4,6,7]);
     });
   });
+
+  it('should resolve for empty array', function() {
+    var gt = function(a) {
+      return function(b) {
+        return b > a;
+      };
+    };
+    var p =  filterp(gt(3))([]);
+    return p.then(function(arr) {
+      expect(arr).to.eql([]);
+    });
+  });
 });
 
 describe('foldp', function() {

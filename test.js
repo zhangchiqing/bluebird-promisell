@@ -258,6 +258,15 @@ describe('foldp', function() {
       expect(r).to.equal(10);
     });
   });
+
+  it('should resolve when array is empty', function() {
+    return foldp(function(b, a) {
+      return Promise.resolve(b + a);
+    })(1)([])
+    .then(function(r) {
+      expect(r).to.equal(1);
+    });
+  });
 });
 
 describe('mapError', function() {

@@ -22,37 +22,10 @@ var apply = function(fn) {
   };
 };
 
-var curry2 = function(fn) {
-  return function (a, b) {
-    if (b === undefined) {
-      return function(b, c) {
-        if (c === undefined) {
-          return fn(a, b);
-        } else {
-          return fn(a, b)(c);
-        }
-      };
-    } else {
-      return fn(a, b);
-    }
-  };
-};
-
 // id :: a -> a
 var id = function(a) {
   return a;
 };
-
-// always :: a -> b -> a
-// > always(1, 2)
-// 1
-// > always(1)(2)
-// 1
-// > always(id)(1, 2)
-// 2
-// > always(id)(1)(2)
-// 2
-var always = curry2(id);
 
 var slice = Array.prototype.slice;
 
@@ -211,7 +184,9 @@ exports.liftp1 = exports.fmapp;
 //. promise
 //. Error 3
 //. ```
-exports.firstp = exports.liftp(always);
+exports.firstp = exports.liftp(id);
+
+var second = function(a, b) { return b; };
 
 //# secondp :: Promise a -> Promise b -> Promise b
 //
@@ -227,7 +202,7 @@ exports.firstp = exports.liftp(always);
 //. promise
 //. Error 3
 //. ```
-exports.secondp = exports.liftp(always(id));
+exports.secondp = exports.liftp(second);
 
 //# filterp :: (a -> Boolean) -> Array Promise a -> Promise Array a
 //

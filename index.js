@@ -170,6 +170,8 @@ exports.liftp = function(fn) {
 //. ```
 exports.liftp1 = exports.fmapp;
 
+exports.liftp2 = exports.liftp3 = exports.liftp4 = exports.liftp5 = exports.liftp;
+
 //# firstp :: Promise a -> Promise b -> Promise a
 //
 //. Takes two Promises and return the first if both of them are resolved
@@ -204,21 +206,20 @@ var second = function(a, b) { return b; };
 //. ```
 exports.secondp = exports.liftp(second);
 
-//# filterp :: (a -> Boolean) -> Array Promise a -> Promise Array a
+//# filterp :: (a -> Promise Boolean) -> Array a -> Promise Array a
 //
-//. Takes a predicate and an array of Promise a, returns a Promise of array a
+//. Takes a predicat that returns a Promise and an array of a, returns a Promise of array a
 //. which satisfy the predicate.
 //
 //. ```js
-//. > filterp(function(a) { return a > 3; })([
-//.     Promise.resolve(2),
-//.     Promise.resolve(3),
-//.     Promise.resolve(4)])
+//. > filterp(function(a) { return Promise.resolve(a > 3); })([2, 3, 4])
 //. promise
 //. [4]
 //. ```
-exports.filterp = function(fn) {
-  return pipe(exports.sequencep, exports.fmapp(filter(fn)));
+exports.filterp = function(predictp) {
+  return function(xs) {
+    return Promise.filter(xs, predictp);
+  };
 };
 
 //# foldp :: (b -> a -> Promise b) -> b -> Array a -> Promise b

@@ -235,14 +235,10 @@ describe('filterp', function() {
   it('should resolve', function() {
     var gt = function(a) {
       return function(b) {
-        return b > a;
+        return Promise.resolve(b > a);
       };
     };
-    var p =  filterp(gt(3))([
-      Promise.resolve(1),
-      Promise.resolve(4),
-      Promise.resolve(6),
-      Promise.resolve(7)]);
+    var p =  filterp(gt(3))([1,4,6,7]);
     return p.then(function(arr) {
       expect(arr).to.eql([4,6,7]);
     });
@@ -251,7 +247,7 @@ describe('filterp', function() {
   it('should resolve for empty array', function() {
     var gt = function(a) {
       return function(b) {
-        return b > a;
+        return Promise.resolve(b > a);
       };
     };
     var p =  filterp(gt(3))([]);

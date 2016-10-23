@@ -3,6 +3,10 @@
 var expect = require('chai').expect;
 var liftp = require('./index').liftp;
 var liftp1 = require('./index').liftp1;
+var liftp2 = require('./index').liftp2;
+var liftp3 = require('./index').liftp3;
+var liftp4 = require('./index').liftp4;
+var liftp5 = require('./index').liftp5;
 var firstp = require('./index').firstp;
 var secondp = require('./index').secondp;
 var purep = require('./index').purep;
@@ -72,6 +76,65 @@ describe('liftp1', function() {
     return liftp1(function(user) {
       return user.email;
     })(Promise.resolve({ email: 'abc@example.com' }));
+  });
+});
+
+describe('liftp1', function() {
+  it('resolve', function() {
+    return liftp2(function(a, b) {
+      return a + b;
+    })(Promise.resolve(2), Promise.resolve(3))
+    .then(function(r) {
+      expect(r).to.equal(5);
+    });
+  });
+});
+
+
+describe('liftp1', function() {
+  it('resolve', function() {
+    return liftp2(function(a, b) {
+      return a + b;
+    })(Promise.resolve(2), Promise.resolve(3))
+    .then(function(r) {
+      expect(r).to.equal(5);
+    });
+  });
+});
+
+describe('liftp3', function() {
+  it('resolve', function() {
+    return liftp3(function(a, b, c) {
+      return a + b + c;
+    })(Promise.resolve(2), Promise.resolve(3), Promise.resolve(4))
+    .then(function(r) {
+      expect(r).to.equal(9);
+    });
+  });
+});
+
+
+
+describe('liftp4', function() {
+  it('resolve', function() {
+    return liftp4(function(a, b, c, d) {
+      return a + b + c + d;
+    })(Promise.resolve(2), Promise.resolve(3), Promise.resolve(4), Promise.resolve(5))
+    .then(function(r) {
+      expect(r).to.equal(14);
+    });
+  });
+});
+
+
+describe('liftp5', function() {
+  it('resolve', function() {
+    return liftp5(function(a, b, c, d, e) {
+      return a + b + c + d + e;
+    })(Promise.resolve(2), Promise.resolve(3), Promise.resolve(4), Promise.resolve(5), Promise.resolve(6))
+    .then(function(r) {
+      expect(r).to.equal(20);
+    });
   });
 });
 

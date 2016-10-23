@@ -50,20 +50,6 @@ var map = function(f) {
   };
 };
 
-// > filter(function(x) { return x > 0; })([1,2,-1])
-// [1,2]
-var filter = function(f) {
-  return function(arr) {
-    return fold(function(memo, value) {
-      if (f(value)) {
-        return memo.concat([value]);
-      } else {
-        return memo;
-      }
-    }, [], arr);
-  };
-};
-
 var pipe = function() {
   var fns = toArray(arguments);
   return function(a) {

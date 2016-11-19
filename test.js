@@ -295,12 +295,13 @@ describe('pipep', function() {
 });
 
 describe('filterp', function() {
-  it('should resolve', function() {
-    var gt = function(a) {
-      return function(b) {
-        return Promise.resolve(b > a);
-      };
+  var gt = function(a) {
+    return function(b) {
+      return Promise.resolve(b > a);
     };
+  };
+
+  it('should resolve', function() {
     var p =  filterp(gt(3))([1,4,6,7]);
     return p.then(function(arr) {
       expect(arr).to.eql([4,6,7]);
@@ -308,11 +309,6 @@ describe('filterp', function() {
   });
 
   it('should resolve for empty array', function() {
-    var gt = function(a) {
-      return function(b) {
-        return Promise.resolve(b > a);
-      };
-    };
     var p =  filterp(gt(3))([]);
     return p.then(function(arr) {
       expect(arr).to.eql([]);
@@ -321,19 +317,19 @@ describe('filterp', function() {
 });
 
 describe('foldp', function() {
+  var sum = function(b, a) {
+    return Promise.resolve(b + a);
+  };
+
   it('should resolve', function() {
-    return foldp(function(b, a) {
-      return Promise.resolve(b + a);
-    })(1)([2, 3, 4])
+    return foldp(sum)(1)([2, 3, 4])
     .then(function(r) {
       expect(r).to.equal(10);
     });
   });
 
   it('should resolve when array is empty', function() {
-    return foldp(function(b, a) {
-      return Promise.resolve(b + a);
-    })(1)([])
+    return foldp(sum)(1)([])
     .then(function(r) {
       expect(r).to.equal(1);
     });
@@ -388,5 +384,57 @@ describe('toPromise', function() {
     .then(function(error) {
       expect(error.message).to.equal('value is not greater than 0');
     });
+  });
+});
+
+// (a, a) -> Bool
+var equal = function(a1, a2) {
+  expect(a1).to.equal(a2);
+};
+
+// (Promise a, Promise a) -> Promise Bool
+var promiseEq = liftp2(equal);
+
+// a -> a
+var identity = function(a) {
+  return a;
+};
+
+describe('Functor laws', function() {
+  it('identity law', function() {
+    var p = purep(3);
+    return promiseEq(
+      fmapp(identity)(p),
+      p);
+  });
+
+  it('composition law', function() {
+    var p = purep(3);
+    var add2 = function(a) {
+      return a + 2;
+    };
+
+    var mul3 = function(b) {
+      return b * 3;
+    };
+
+    return promiseEq(
+      fmapp(function(x) { return add2(mul3(x)); })(p),
+      fmapp(add2)(fmapp(mul3)(p)));
+  });
+});
+
+describe('Applicative laws', function() {
+  it('identity law', function() {
+    var p = purep(3);
+    return promiseEq(liftp(identity)(p), p);
+  });
+
+  it('homomorphism law', function() {
+    var p = purep(3);
+    var add2 = function(a) {
+      return a + 2;
+    };
+    return promiseEq(liftp(add2)(p), purep(add2(3)));
   });
 });

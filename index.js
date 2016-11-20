@@ -1,7 +1,141 @@
-'use strict';
+//. # bluebird-promisell
+//. A functional programming library for promises.
+//.
+//. `bluebird-promisell` provides a set of composable functions that allows you to write flat async code with promises.
+//.
+//. ## Usage
+//. ### Write flat async code with "liftp"
+//.
+//. Let's say we have the following sync code to get a list of userId.
+//.
+//. ```javascript
+//. var getToken = function() { return 'token'; };
+//. var getSecret = function() { return 'secret'; };
+//. var getUserIds = function(token, secret) {
+//.   return [1, 2, 3];
+//. };
+//.
+//. // Token
+//. var token = getToken();
+//.
+//. // Secret
+//. var secret = getSecret();
+//.
+//. // [UserId]
+//. var userIds = getUserIds(token, secret);
+//.
+//. console.log(userIds); // [1, 2, 3]
+//. ```
+//.
+//. Now, if the sub functions `getToken`, `getSecret`, `getUserIds` becomes async (all return Promise),
+//. the only change we need to make is "lifting" `getUserIds` with `liftp`.
+//.
+//. ```javascript
+//. var Promise = require('bluebird');
+//. var P = require('bluebird-promisell');
+//.
+//. var getToken = function() { return Promise.resolve('token'); };
+//. var getSecret = function() { return Promise.resolve('secret'); };
+//. var getUserIds = function(token, secret) {
+//.   return Promise.resolve([1, 2, 3]);
+//. };
+//.
+//. // Promise Token
+//. var tokenP = getToken();
+//.
+//. // Promise Secret
+//. var secretP = getSecret();
+//.
+//. // Promise [UserId]
+//. var userIdsP = P.liftp(getUserIds)(tokenP, secretP);
+//.
+//. userIdsP.then(console.log); // [1, 2, 3]
+//. ```
+//.
+//. Now the code runs async, but it reads like sync code.
+//.
+//. ### Making async calls in parallel with "traversep"
+//.
+//. ```javascript
+//. var getPhotoByUserId = function(userId) {
+//.   if (userId === 1) {
+//.     return ':)';
+//.   } else if (userId === 2) {
+//.     return ':D';
+//.   } else {
+//.     return ':-|';
+//.   }
+//. };
+//.
+//. // Promise Token
+//. var tokenP = getToken();
+//.
+//. // Promise Secret
+//. var secretP = getSecret();
+//.
+//. // Promise [UserId]
+//. var userIdsP = P.liftp(getUserIds)(tokenP, secretP);
+//.
+//. // Promise [Photo]
+//. var photosP = P.traversep(getPhotoByUserId)(userIdsP);
+//. photosP.then(console.log); // [":)", ":D", ":-|"]
+//. ```
+//.
+//. ### Making async calls sequentially with "foldp"
+//. ```javascript
+//. // Promise [UserId]
+//. var userIdsP = P.liftp(getUserIds)(tokenP, secretP);
+//.
+//. // [Photo] -> Photo -> [Photo]
+//. var appendPhotos = function(photos, photo) {
+//.   return photos.concat([photo]);
+//. };
+//.
+//. // Promise [Photo]
+//. var photosP = P.foldp(function(photos, userId) {
+//.   // Promise Photo
+//.   var photoP = getPhotoByUserId(userId);
+//.   return P.liftp(appendPhotos)(P.purep(photos), photoP); // `P.purep` is equivalent to `Promise.resolve`
+//. })([])(userIdsP);
+//.
+//. photosP.then(console.log); // [":)", ":D", ":-|"]
+//. ```
+//.
+//. The above code will fetch photo by userId sequentially. If it fails to fetch the first photo,
+//. it will reject the promise without fetching next photo.
+//. And it will resolve the promise once all the photos have been fetched.
+//.
+//. ## Wait until the second async call to finish, then return the value of the first async call
+//.
+//. Let's say we want to send an email with all the photos, and wait until the email has been sent,
+//. then resolve the promise with the photos
+//.
+//. With `firstp`, we can wait until the email has been sent, and return the result of photos which
+//. is from the first promise.
+//
+//. ```javascript
+//. var sendEmailWithPhotos = function(photos) {
+//.   return Promise.resolve('The email has been sent');
+//. };
+//.
+//. // Promise [Photo]
+//. var photosP = P.foldp(function(photos, userId) {
+//.   // Promise Photo
+//.   var photoP = getPhotoByUserId(userId);
+//.   return P.liftp(appendPhotos)(P.purep(photos), photoP); // `P.purep` is equivalent to `Promise.resolve`
+//. })([])(userIdsP);
+//.
+//. // Promise String
+//. var sentP = P.liftp1(sendEmailWithPhotos)(photosP);
+//. //          ^^^^^^^^ P.liftp1 is equivalent to P.liftp when there is only one promise to resolve.
+//. //                   But P.liftp1 has better performance than P.liftp.
+//.
+//. P.first(photosP, sentP).then(console.log); // [":)", ":D", ":-|"]
+//. ```
 
-var Promise = require('bluebird');
 
+//.
+//. ## API
 //# purep :: a -> Promise a
 //.
 //. Takes any value, returns a resolved Promise with that value
@@ -11,6 +145,10 @@ var Promise = require('bluebird');
 //. promise
 //. 3
 //. ```
+'use strict';
+
+var Promise = require('bluebird');
+
 exports.purep = function(a) {
   return Promise.resolve(a);
 };
@@ -161,7 +299,6 @@ exports.liftp2 = exports.liftp3 = exports.liftp4 = exports.liftp5 = exports.lift
 //# firstp :: Promise a -> Promise b -> Promise a
 //
 //. Takes two Promises and return the first if both of them are resolved
-//. alias <* firstp
 //
 //. ```js
 //. > firstp(Promise.resolve(1), Promise.resolve(2))
@@ -179,7 +316,6 @@ var second = function(a, b) { return b; };
 //# secondp :: Promise a -> Promise b -> Promise b
 //
 //. Takes two Promises and return the second if both of them are resolved
-//. alias *> secondp
 //
 //. ```js
 //. > secondp(Promise.resolve(1), Promise.resolve(2))

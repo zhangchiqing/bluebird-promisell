@@ -1,16 +1,14 @@
 {
   "name": "bluebird-promisell",
   "version": "0.5.0",
-  "description": "Functor, Applicative, Traversable, Foldable instances for bluebird Promise",
+  "description": "a functional programming library for promises",
   "main": "index.js",
   "scripts": {
     "test": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly --report html",
-    "test:doc": "node_modules/.bin/doctest --prefix . --nodejs '--harmony' --module commonjs index.js",
-    "codecov": "npm run test && codecov",
-    "docs": "npm run test && cp README.md.header README.md && transcribe --url './{filename}#L{line}' -- index.js >> README.md",
-    "release-major": "xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment major",
-    "release-minor": "xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment minor",
-    "release-patch": "xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment patch"
+    "doc": "npm run test && transcribe --url './{filename}#L{line}' -- index.js > README.md",
+    "release-major": "npm run doc && xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment major",
+    "release-minor": "npm run doc && xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment minor",
+    "release-patch": "npm run doc && xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment patch"
   },
   "keywords": [
     "Promise",
@@ -30,7 +28,9 @@
     "url": "git+https://github.com/zhangchiqing/bluebird-promisell.git"
   },
   "files": [
-    "index.js"
+    "/LICENSE",
+    "/index.js",
+    "/package.json"
   ],
   "author": "Leo Zhang <zhangchiqing@gmail.com>",
   "license": "MIT",

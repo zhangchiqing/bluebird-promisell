@@ -127,7 +127,8 @@ OK, It works. What's next?
 Taking inputs from multiple async calls
 --------------------------
 
-Now let's say in order to get the list of users, we need an API token and a secret. And to get them, we have to make separate async calls with the following fuctions.
+Now let's say in order to get the list of users, we need an API token and a secret.
+And to get them, we have to make separate async calls with the following fuctions.
 
 ```diff
 +// () -> Promise Token
@@ -143,7 +144,7 @@ Now let's say in order to get the list of users, we need an API token and a secr
 -// () -> Promise [User]
 -var getUsers = function() {
 +// (Token, Secret) -> Promise [User]
-+var getUsers = function(token, user) {
++var getUsers = function(token, secret) {
   return delayThenResolve(1, ['A', 'B', 'C']);
 };
 ```
@@ -176,13 +177,14 @@ Access async data from differnt function scope
 
 Now, let's say in order to get photo by user, we need to pass in the api token.
 
-It means we need to pass a new parameter `token` to both `getPhotoByUser` and `getPhotosByUsers`:
+It means we need to pass a new parameter `token` to both `getPhotoByUser` and `getPhotosByUsers`, and let's rename them into
+`getPhotoByTokenAndUser` and `getPhotosByTokenAndUsers`:
 
 ```diff
 -// User -> Promise Photo
 -var getPhotoByUser = function(user) {
 +// (Token, User) -> Promise Photo
-+var getPhotoByUser = function(token, user) {
++var getPhotoByTokenAndUser = function(token, user) {
   var photo = user === 'A' ? ':)' :
               user === 'B' ? ':D' :
               user === 'C' ? ':/' :
@@ -194,10 +196,10 @@ It means we need to pass a new parameter `token` to both `getPhotoByUser` and `g
 -// [User] -> Promise [Photo]
 -var getPhotosByUsers = function(users) {
 +// (Token, [User]) -> Promise [Photo]
-+var getPhotosByUsers = function(token, users) {
++var getPhotosByTokenAndUsers = function(token, users) {
 -  return Promise.map(users, getPhotoByUser);
 +  return Promise.map(users, function(user) {
-+    return getPhotoByUser(token, user);
++    return getPhotoByTokenAndUser(token, user);
 +  });
 };
 ```
@@ -399,17 +401,17 @@ So in order to get photos one by one, we can refactor `getPhotosByUsers` with `f
 
 ```diff
 // (Token, [User]) -> Promise [Photo]
-var getPhotosByUsers = function(token, users) {
+var getPhotosByTokenAndUsers = function(token, users) {
   return Promise.map(users, function(user) {
-    return getPhotoByUser(token, user);
+    return getPhotoByTokenAndUser(token, user);
   });
 };
 
 +// (Token, [User]) -> Promise [Photo]
-+var getPhotosByUsersSequentially = function(token, users) {
++var getPhotosByTokenAndUsersSequentially = function(token, users) {
 +  return P.foldp(function(photos, user) {
 +    // Promise Photo
-+    var photoP = getPhotoByUser(token, user);
++    var photoP = getPhotoByTokenAndUser(token, user);
 +
 +    // Promise [Photo]
 +    var addedP = P.liftp1(function(photo) {
@@ -434,10 +436,10 @@ We can also create an `appendTo` function to make the logic easier to read.
 +};
 
 // (Token, [User]) -> Promise [Photo]
-var getPhotosByUsersSequentially = function(token, users) {
+var getPhotosByTokenAndUsersSequentially = function(token, users) {
   return P.foldp(function(photos, user) {
     // Promise Photo
-    var photoP = getPhotoByUser(token, user);
+    var photoP = getPhotoByTokenAndUser(token, user);
 
     // Promise [Photo]
 -    var addedP = P.liftp1(function(photo) {
@@ -449,7 +451,7 @@ var getPhotosByUsersSequentially = function(token, users) {
 };
 ```
 
-Now if we replace the `getPhotosByUsers` function with `getPhotosByUsersSequentially` in the `main` function,
+Now if we replace the `getPhotosByTokenAndUsers` function with `getPhotosByTokenAndUsersSequentially` in the `main` function,
 it's gonna get photo for each user sequentially.
 
 ```diff
@@ -464,8 +466,8 @@ var main = function() {
   var usersP = P.liftp(getUsers)(tokenP, secretP);
 
   // Promise [Photo]
--  var photosP = P.liftp(getPhotosByUsers)(tokenP, usersP);
-+  var photosP = P.liftp(getPhotosByUsersSequentially)(tokenP, usersP);
+-  var photosP = P.liftp(getPhotosByTokenAndUsers)(tokenP, usersP);
++  var photosP = P.liftp(getPhotosByTokenAndUsersSequentially)(tokenP, usersP);
 
   return photosP;
 };
@@ -479,15 +481,15 @@ Parallel executing
 -----------------------------------
 Speaking of the parallel version, `bluebird-promisell` also provides a `traversep` function to make async calls in parallel.
 
-We can refactor the `getPhotosByUsers` with `traversep`.
+We can refactor the `getPhotosByTokenAndUsers` with `traversep`.
 
 ```diff
-var getPhotosByUsers = function(token, users) {
+var getPhotosByTokenAndUsers = function(token, users) {
 -  return Promise.map(users, function(user) {
--    return getPhotoByUser(token, user);
+-    return getPhotoByTokenAndUser(token, user);
 -  });
 +  return P.traversep(function(user) {
-+    return getPhotoByUser(token, user);
++    return getPhotoByTokenAndUser(token, user);
 +  })(users);
 };
 ```
@@ -553,7 +555,7 @@ var main = function() {
   var usersP = P.liftp(getUsers)(tokenP, secretP);
 
   // Promise [Photo]
-  var photosP = P.liftp(getPhotosByUsersSequentially)(tokenP, usersP);
+  var photosP = P.liftp(getPhotosByTokenAndUsersSequentially)(tokenP, usersP);
 
 -  return photosP;
 +  // Promise void
@@ -593,7 +595,7 @@ var main = function() {
   var usersP = P.liftp(getUsers)(tokenP, secretP);
 
   // Promise [Photo]
-  var photosP = P.liftp(getPhotosByUsersSequentially)(tokenP, usersP);
+  var photosP = P.liftp(getPhotosByTokenAndUsersSequentially)(tokenP, usersP);
 
   // Promise void
   var sentP = P.liftp1(sendEmailWithPhotos)(photosP);
@@ -625,6 +627,8 @@ Then we also introduced a few patterns to make async calls sequentially or simut
 All these functions from `bluebird-promisell` are composible, meaning they take functions and return functions to work with Promises. Very practical for functional programming.
 
 I hope by now you should understand far more of async programming in a functional programming style with Promises than a few while ago.
+
+Here is [the link to the complete code example](https://github.com/zhangchiqing/bluebird-promisell/blob/tutorial/tutorials/functional-async-programming/).
 
 Want to learn more?
 ----------------------------------

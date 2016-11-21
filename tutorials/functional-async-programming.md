@@ -1,11 +1,9 @@
 Functional Async Programming with Promises
 ===============================================
 
-I've seen many struggle when people doing async programming in Javascript.
-We all know callback solution doesn't scale. Promises might turn into "Promise hell".
+I've seen many struggles when people doing async programming in Javascript. We all know callback solution doesn't scale. Promises might turn into "Promise hell". I got inspired when learning functional programming, and made this library called `bluebird-promisell` to make async programming easy with Promises.
 
-In this tutorial, I will give real world example to show the functional way of doing async programming with Promises.
-You will learn how the library `bluebird-promisell` makes the solution easy to read and scale.
+In this tutorial, I will give real world example to show the functional way of doing async programming with Promises. Hopefully you will learn how the library makes the solution easy to read and scale.
 
 Start with an async call
 ----------------
@@ -35,13 +33,16 @@ So if we call `getPhotoByUser` with a user in a `main` function, it's gonna prin
 
 ```javascript
 var main = function() {
-  getPhotoByUser('A')
-  .then(function(photo) {
-    console.log('Photo', photo);
-  });
+  return getPhotoByUser('A');
 };
 
-main();
+main()
+.then(function(photo) {
+  console.log('Photo', photo);
+})
+.catch(function(error) {
+  console.log('Error', error);
+});
 
 // Photo :)
 ```
@@ -57,22 +58,19 @@ How to implement a function `getPhotosByUsers` that takes a list of users and re
 
 Well, with `bluebird` library, we can implement it with the `getPhotoByUser` we've made before:
 
-```javascript
-// [User] -> Promise [Photo]
-var getPhotosByUsers = function(users) {
-  return Promise.map(users, getPhotoByUser);
-};
+```diff
++// [User] -> Promise [Photo]
++var getPhotosByUsers = function(users) {
++  return Promise.map(users, getPhotoByUser);
++};
 
 var main = function() {
-  getPhotosByUsers(['A', 'B', 'C'])
-  .then(function(photos) {
-    console.log('Photos', photos);
-  });
+-  return getPhotoByUser('A');
++  return getPhotosByUsers(['A', 'B', 'C']);
 };
 
-main();
-
-// Photos [':)', ':D', ':/']
+-// Photo :)
++// Photos [':)', ':D', ':/']
 ```
 
 Cool! Nest, `bluebird` provides a map function that allows us to make async calls in parallel and return a Promise
@@ -84,20 +82,20 @@ Chain async calls
 OK. What if we have to make an async call to get the list of users?
 
 
-```javascript
-// Returns a function that will return the given data in a resolved Promise after certain seconds
-var delayThenResolve = function(secs, data) {
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
-      resolve(data);
-    }, secs * 1000);
-  });
-};
+```diff
++// Returns a function that will return the given data in a resolved Promise after certain seconds
++var delayThenResolve = function(secs, data) {
++  return new Promise(function(resolve, reject) {
++    setTimeout(function() {
++      resolve(data);
++    }, secs * 1000);
++  });
++};
 
-// () -> Promise [User]
-var getUsers = function() {
-  return delayThenResolve(1, ['A', 'B', 'C']);
-};
++// () -> Promise [User]
++var getUsers = function() {
++  return delayThenResolve(1, ['A', 'B', 'C']);
++};
 
 getUsers()
 .then(function(users) {
@@ -111,15 +109,13 @@ If `getUsers` is provded as above, how to refactor `getPhotosByUsers` so that it
 
 Well, we just need to use the `then` method, right?
 
-```
+```diff
 var main = function() {
-  getUsers()
-  .then(function(users) {
-    return getPhotosByUsers(users);
-  })
-  .then(function(photos) {
-    console.log('Photos', photos);
-  });
+-  return getPhotosByUsers(['A', 'B', 'C']);
++  return getUsers()
++  .then(function(users) {
++    return getPhotosByUsers(users);
++  });
 };
 
 // Photos [':)', ':D', ':/']
@@ -132,16 +128,16 @@ Taking inputs from multiple async calls
 
 Now let's say in order to get the list users, we need an API token and a secret. And to get them, we have to make separate async calls with the following fuctions.
 
-```
-// () -> Promise Token
-var getToken = function() {
-  return delayThenResolve(1, 'token abc');
-};
+```diff
++// () -> Promise Token
++var getToken = function() {
++  return delayThenResolve(1, 'token abc');
++};
 
-// () -> Promise Secret
-var getSecret = function() {
-  return delayThenResolve(1, 'secret h9irnvxwri');
-};
++// () -> Promise Secret
++var getSecret = function() {
++  return delayThenResolve(1, 'secret h9irnvxwri');
++};
 
 // (Token, Secret) -> Promise [User]
 var getUsers = function(token, user) {
@@ -153,17 +149,15 @@ So the `getUsers` is now taking `token` and `secret`.
 
 With the `Promise.all` function from `bluebird`, we can refactor the `main` function like this:
 
-```javascript
+```diff
 var main = function() {
-  Promise.all([getToken(), getSecret()])
-  .spread(function(token, secret) {
-    return getUsers(token, secret);
-  })
+-  return getUsers()
++  return Promise.all([getToken(), getSecret()])
++  .spread(function(token, secret) {
++    return getUsers(token, secret);
++  })
   .then(function(users) {
     return getPhotosByUsers(users);
-  })
-  .then(function(photos) {
-    console.log('Photos', photos);
   });
 };
 
@@ -180,26 +174,27 @@ Access async data from differnt function scope
 Now, let's say in order to get photo by user, we also need to pass in the api token.
 And it also means we need to pass `token` to `getPhotosByUsers`:
 
-```javascript
-// (Token, User) -> Promise Photo
-var getPhotoByUser = function(token, user) {
+```diff
+-// User -> Promise Photo
+-var getPhotoByUser = function(user) {
++// (Token, User) -> Promise Photo
++var getPhotoByUser = function(token, user) {
   var photo = user === 'A' ? ':)' :
               user === 'B' ? ':D' :
               user === 'C' ? ':/' :
               ':-|';
 
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
-      resolve(photo);
-    }, 1000);
-  });
+  return delayThenResolve(1, photo);
 };
 
-// (Token, [User]) -> Promise [Photo]
-var getPhotosByUsers = function(token, users) {
-  return Promise.map(users, function(user) {
-    return getPhotoByUser(token, user);
-  });
+-// [User] -> Promise [Photo]
+-var getPhotosByUsers = function(token, users) {
++// (Token, [User]) -> Promise [Photo]
++var getPhotosByUsers = function(users) {
+-  return Promise.map(users, getPhotoByUser);
++  return Promise.map(users, function(user) {
++    return getPhotoByUser(token, user);
++  });
 };
 ```
 
@@ -207,39 +202,37 @@ How to refactor our data flow in `main`?
 
 Well, I can't pass the `token` to `getPhotosByUsers` directly, because they are in different functions' scope.
 
-```javascript
+```diff
 var main = function() {
-  Promise.all([getToken(), getSecret()])
+  return Promise.all([getToken(), getSecret()])
   .spread(function(token, secret) {
     return getUsers(token, secret);
   })
   .then(function(users) {
-    return getPhotosByUsers(token, users);
-    //                      ^^^^^ Error: token is not accessible from here.
-  })
-  .then(function(photos) {
-    console.log('Photos', photos);
+-    return getPhotosByUsers(users);
++    return getPhotosByUsers(token, users);
++    //                      ^^^^^ Error: token is not accessible from here.
   });
 };
 
-// Error: token is undefined
+-// Photos [':)', ':D', ':/']
++// Error: token is undefined
 ```
 
 To work around it, we will move `getPhotosByUsers` to where it can access `token`, and chain `getPhotosByUsers` after `getUsers` so that
 if there is any error raised, it will be caught by the outer catch function:
 
-```javascript
+```diff
 var main = function() {
-  Promise.all([getToken(), getSecret()])
+  return Promise.all([getToken(), getSecret()])
   .spread(function(token, secret) {
-    return getUsers(token, secret);
-    .then(function(users) {
-      return getPhotosByUsers(token, users);
-    });
-  };
-  .then(function(photos) {
-    console.log('Photos', photos);
-  });
+-    return getUsers(token, secret);
+-  })
++    return getUsers(token, secret)
++    .then(function(users) {
++      return getPhotosByUsers(token, users);
++    });
++  });
 };
 
 // Photos [':)', ':D', ':/']
@@ -267,7 +260,7 @@ var main = function() {
   var secret = getSecret();
   var users = getUsers(token, secret);
   var photos = getPhotosByUsers(token, users);
-  console.log('Photos', photos);
+  return photos;
 };
 ```
 
@@ -279,20 +272,18 @@ Yes! All we need is a function `liftp` from `bluebird-promisell` library, which 
 -------------------------------
 The function `liftp` can "lift" your function so that it can take parameters from Promises:
 
-```javascript
+```diff
 var P = require('bluebird-promisell');
 
 var main = function() {
   var token = getToken();
   var secret = getSecret();
-  var users = P.liftp(getUsers)(token, secret);
-  var photos = P.liftp(getPhotosByUsers)(token, users);
-  photos.then(function(ps) {
-    console.log('Photos', ps);
-  });
+-  var users = getUsers(token, secret);
++  var users = P.liftp(getUsers)(token, secret);
+-  var photos = getPhotosByUsers(token, users);
++  var photos = P.liftp(getPhotosByUsers)(token, users);
+  return photos;
 };
-
-main();
 
 // Photos [':)', ':D', ':/']
 ```
@@ -301,26 +292,27 @@ Nice! Flat and nest as if it was sync code. More importantly it reads like sync 
 
 But to claim that the data in the flows are all promises, I usually put a `P` in the end of the variable names as convention to indicate the variable is a Promise, so that we don't treat it as a non-Promise value by mistake.
 
-```javascript
+```diff
 var main = function() {
-  // Promise Token
-  var tokenP = getToken();
++  // Promise Token
+-  var token = getToken();
++  var tokenP = getToken();
++
+-  // Promise Secret
+-  var secret = getSecret();
++  var secretP = getSecret();
++
++  // Promise [User]
+-  var users = P.liftp(getUsers)(token, secret);
++  var usersP = P.liftp(getUsers)(tokenP, secretP);
++
++  // Promise [Photo]
+-  var photos = P.liftp(getPhotosByUsers)(token, users);
++  var photosP = P.liftp(getPhotosByUsers)(tokenP, usersP);
 
-  // Promise Secret
-  var secretP = getSecret();
-
-  // Promise [User]
-  var usersP = P.liftp(getUsers)(tokenP, secretP);
-
-  // Promise [Photo]
-  var photosP = P.liftp(getPhotosByUsers)(tokenP, usersP);
-
-  photosP.then(function(ps) {
-    console.log('Photos', ps);
-  });
+-  return photos;
++  return photosP;
 };
-
-main();
 
 // Photos [':)', ':D', ':/']
 ```
@@ -377,7 +369,7 @@ We can take the idea of the above folding, and apply it to make sequential execu
 
 The type signatures of `foldp` is very similar to the `fold` we just created:
 
-```javascript
+```haskell
 fold  :: (b -> a -> b)         -> b -> [a] -> [b]
 foldp :: (b -> a -> Promise b) -> b -> [a] -> Promise [b]
 ```
@@ -390,34 +382,34 @@ If a Promise gets rejected, then the "folding" will just halt, and return the re
 
 So in order to get photos one by one, we can refactor `getPhotosByUsers` with `foldp`:
 
-```javascript
-// (Token, [User]) -> Promise [Photo]
-var getPhotosByUsersSequentially = function(token, users) {
-  return P.foldp(function(photos, user) {
-    // Promise Photo
-    var photoP = getPhotoByUser(token, user);
-
-    // Promise [Photo]
-    var addedP = P.liftp1(function(photo) {
-      //           ^^^^^^  "liftp1" is equivalent to "liftp" but has better performance when
-      //                   the function to be lifted only takes one parameter.
-      return photos.concat([photo]);
-    })(photos);
-
-    return addedP;
-  })([])(users);
-};
+```diff
++// (Token, [User]) -> Promise [Photo]
++var getPhotosByUsersSequentially = function(token, users) {
++  return P.foldp(function(photos, user) {
++    // Promise Photo
++    var photoP = getPhotoByUser(token, user);
++
++    // Promise [Photo]
++    var addedP = P.liftp1(function(photo) {
++      //           ^^^^^^  "liftp1" is equivalent to "liftp" but has better performance when
++      //                   the function to be lifted only takes one parameter.
++      return photos.concat([photo]);
++    })(photos);
++
++    return addedP;
++  })([])(users);
++};
 ```
 
 We can make an `appendTo` function to the code cleaner.
 
-```javascript
-// [a] -> a -> [a]
-var appendTo = function(array) {
-  return function(item) {
-    return array.concat([item]);
-  };
-};
+```diff
++// [a] -> a -> [a]
++var appendTo = function(array) {
++  return function(item) {
++    return array.concat([item]);
++  };
++};
 
 // (Token, [User]) -> Promise [Photo]
 var getPhotosByUsersSequentially = function(token, users) {
@@ -426,7 +418,11 @@ var getPhotosByUsersSequentially = function(token, users) {
     var photoP = getPhotoByUser(token, user);
 
     // Promise [Photo]
-    return P.liftp1(appendTo(photos))(photoP);
+-    var addedP = P.liftp1(function(photo) {
+-      return photos.concat([photo]);
+-    })(photos);
+-    return addedP;
++    return P.liftp1(appendTo(photos))(photoP);
   })([])(users);
 };
 ```
@@ -434,7 +430,7 @@ var getPhotosByUsersSequentially = function(token, users) {
 Now if we replace the `getPhotosByUsers` function with `getPhotosByUsersSequentially` in the `main` function,
 it's gonna get photo for each user sequentially.
 
-```javascript
+```diff
 var main = function() {
   // Promise Token
   var tokenP = getToken();
@@ -446,14 +442,11 @@ var main = function() {
   var usersP = P.liftp(getUsers)(tokenP, secretP);
 
   // Promise [Photo]
-  var photosP = P.liftp(getPhotosByUsersSequentially)(tokenP, usersP);
+-  var photosP = P.liftp(getPhotosByUsers)(tokenP, usersP);
++  var photosP = P.liftp(getPhotosByUsersSequentially)(tokenP, usersP);
 
-  photosP.then(function(ps) {
-    console.log('Photos', ps);
-  });
+  return photosP;
 };
-
-main();
 
 // Photos [':)', ':D', ':/']
 ```
@@ -466,11 +459,14 @@ Speaking of the parallel version, `bluebird-promisell` also provides a `traverse
 
 We can refactor the `getPhotosByUsers` with `traversep`.
 
-```javascript
+```diff
 var getPhotosByUsers = function(token, users) {
-  return P.traversep(function(user) {
-    return getPhotoByUser(token, user);
-  })(users);
+-  return Promise.map(users, function(user) {
+-    return getPhotoByUser(token, user);
+-  });
++  return P.traversep(function(user) {
++    return getPhotoByUser(token, user);
++  })(users);
 };
 ```
 
@@ -480,7 +476,7 @@ so that it's easier to compose functions.
 For example, at the beginning when `getPhotoByUser` and `getPhotosByUsers` don't have to take "token" as input, we could refactor `getPhotosByUsers` in a
 point-free style with `traversep`:
 
-```javascript
+```diff
 // User -> Promise Photo
 var getPhotoByUser = function(user) {
   var photo = user === 'A' ? ':)' :
@@ -488,15 +484,14 @@ var getPhotoByUser = function(user) {
               user === 'C' ? ':/' :
               ':-|';
 
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
-      resolve(photo);
-    }, 1000);
-  });
+  return delayThenResolve(1, photo);
 };
 
 // [User] -> Promise [Photo]
-var getPhotosByUsers = P.traversep(getPhotoByUser);
+-var getPhotosByUsers = function(users) {
+-  return Promise.map(users, getPhotoByUser);
+-};
++var getPhotosByUsers = P.traversep(getPhotoByUser);
 ```
 
 Igorning an async result
@@ -513,11 +508,11 @@ We are provided with a `sendEmailWithPhotos` that takes a list of photo and retu
 
 Alright, we could use `liftp` to implement it:
 
-```javascript
-// [Photo] -> Promise void
-var sendEmailWithPhotos = function(photos) {
-  return delayThenResolve(1, null);
-};
+```diff
++// [Photo] -> Promise void
++var sendEmailWithPhotos = function(photos) {
++  return delayThenResolve(1, null);
++};
 
 var main = function() {
   // Promise Token
@@ -532,20 +527,17 @@ var main = function() {
   // Promise [Photo]
   var photosP = P.liftp(getPhotosByUsersSequentially)(tokenP, usersP);
 
-  // Promise void
-  var sentP = P.liftp1(sendEmailWithPhotos)(photosP);
-
-  // Promise [Photo]
-  var resultP = P.liftp(function(photos, sent) {
-    return photos;
-  })(photosP, sentP);
-
-  resultP.then(function(ps) {
-    console.log('Photos', ps);
-  });
+-  return photosP;
++  // Promise void
++  var sentP = P.liftp1(sendEmailWithPhotos)(photosP);
++
++  // Promise [Photo]
++  var resultP = P.liftp(function(photos, sent) {
++    return photos;
++  })(photosP, sentP);
++
++  return resultP;
 };
-
-main();
 
 // Photos [':)', ':D', ':/']
 ```
@@ -556,7 +548,7 @@ Is there a way to say wait until the two Promises are resolved, and return the v
 
 Yes, that's `firstp`!
 
-```javascript
+```diff
 // [Photo] -> Promise void
 var sendEmailWithPhotos = function(photos) {
   return delayThenResolve(1, null);
@@ -579,14 +571,13 @@ var main = function() {
   var sentP = P.liftp1(sendEmailWithPhotos)(photosP);
 
   // Promise [Photo]
-  var resultP = P.firstp(photosP, sentP);
+-  var resultP = P.liftp(function(photos, sent) {
+-    return photos;
+-  })(photosP, sentP);
++  var resultP = P.firstp(photosP, sentP);
 
-  resultP.then(function(ps) {
-    console.log('Photos', ps);
-  });
+  return resultP;
 };
-
-main();
 
 // Photos [':)', ':D', ':/']
 ```

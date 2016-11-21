@@ -1,7 +1,7 @@
 Functional Async Programming with Promises
 ===============================================
 
-I've seen many struggles when people doing async programming in Javascript. We all know callback solution doesn't scale. Promises might turn into "Promise hell". I got inspired when learning functional programming, and made this library called `bluebird-promisell` to make async programming easy with Promises.
+I've seen many struggles when people doing async programming in Javascript. We all know callback solution doesn't scale. Promises might turn into "Promise hell". When I was looking for better solutions, I learned functional programming and got inspired. I made this library called `bluebird-promisell` to make async programming easy with Promises.
 
 In this tutorial, I will give real world example to show the functional way of doing async programming with Promises. Hopefully you will learn how the library makes the solution easy to read and scale.
 
@@ -47,7 +47,7 @@ main()
 // Photo :)
 ```
 
-OK, works. It's a good start. But not done yet, let's see some change from requirement.
+OK, works. It's a good start. But it's not done yet, let's see some change from requirement.
 
 Making async calls in parallel
 ----------------------------
@@ -73,7 +73,7 @@ var main = function() {
 +// Photos [':)', ':D', ':/']
 ```
 
-Cool! Nest, `bluebird` provides a map function that allows us to make async calls in parallel and return a Promise
+Cool! Nest, `bluebird` provides a `map` function that allows us to make async calls in parallel and return a Promise
 which will be resolved when all the photos are fetched.
 
 Chain async calls
@@ -81,6 +81,7 @@ Chain async calls
 
 OK. What if we have to make an async call to get the list of users?
 
+First, let's make a function `delayThenResolve`. We will that to fake async calls.
 
 ```diff
 +// Returns a function that will return the given data in a resolved Promise after certain seconds
@@ -105,9 +106,9 @@ getUsers()
 // ['A', 'B', 'C']
 ```
 
-If `getUsers` is provded as above, how to refactor `getPhotosByUsers` so that it can still return users' photos?
+If `getUsers` is provded as above, which takes nothing and return a Promise of users, how to refactor `getPhotosByUsers` so that it can still return users' photos?
 
-Well, we just need to use the `then` method, right?
+Well, we just need to use the `then` method to chain the async calls, right?
 
 ```diff
 var main = function() {
@@ -126,7 +127,7 @@ OK, It works. What's next?
 Taking inputs from multiple async calls
 --------------------------
 
-Now let's say in order to get the list users, we need an API token and a secret. And to get them, we have to make separate async calls with the following fuctions.
+Now let's say in order to get the list of users, we need an API token and a secret. And to get them, we have to make separate async calls with the following fuctions.
 
 ```diff
 +// () -> Promise Token
@@ -139,13 +140,15 @@ Now let's say in order to get the list users, we need an API token and a secret.
 +  return delayThenResolve(1, 'secret h9irnvxwri');
 +};
 
-// (Token, Secret) -> Promise [User]
-var getUsers = function(token, user) {
+-// () -> Promise [User]
+-var getUsers = function() {
++// (Token, Secret) -> Promise [User]
++var getUsers = function(token, user) {
   return delayThenResolve(1, ['A', 'B', 'C']);
 };
 ```
 
-So the `getUsers` is now taking `token` and `secret`.
+We have `getToken` and `getSecret` that will return token and secret asynchronously. And `getUsers` is now taking `token` and `secret`.
 
 With the `Promise.all` function from `bluebird`, we can refactor the `main` function like this:
 
@@ -164,15 +167,16 @@ var main = function() {
 // Photos [':)', ':D', ':/']
 ```
 
-It works. But the code starts getting a bit hard to read.
+It works. But the code starts getting a bit harder to read.
 
 OK, the next change is gonna make the data flow even more complex.
 
 Access async data from differnt function scope
 -------------------------
 
-Now, let's say in order to get photo by user, we also need to pass in the api token.
-And it also means we need to pass `token` to `getPhotosByUsers`:
+Now, let's say in order to get photo by user, we need to pass in the api token.
+
+It means we need to pass a new parameter `token` to both `getPhotoByUser` and `getPhotosByUsers`:
 
 ```diff
 -// User -> Promise Photo
@@ -188,9 +192,9 @@ And it also means we need to pass `token` to `getPhotosByUsers`:
 };
 
 -// [User] -> Promise [Photo]
--var getPhotosByUsers = function(token, users) {
+-var getPhotosByUsers = function(users) {
 +// (Token, [User]) -> Promise [Photo]
-+var getPhotosByUsers = function(users) {
++var getPhotosByUsers = function(token, users) {
 -  return Promise.map(users, getPhotoByUser);
 +  return Promise.map(users, function(user) {
 +    return getPhotoByUser(token, user);
@@ -200,7 +204,7 @@ And it also means we need to pass `token` to `getPhotosByUsers`:
 
 How to refactor our data flow in `main`?
 
-Well, I can't pass the `token` to `getPhotosByUsers` directly, because they are in different functions' scope.
+Well, we can't pass the `token` to `getPhotosByUsers` directly, because they are in different functions' scope.
 
 ```diff
 var main = function() {
@@ -219,7 +223,7 @@ var main = function() {
 +// Error: token is undefined
 ```
 
-To work around it, we will move `getPhotosByUsers` to where it can access `token`, and chain `getPhotosByUsers` after `getUsers` so that
+To work around it, we can move `getPhotosByUsers` to where it can access `token`, and chain `getPhotosByUsers` after `getUsers` so that
 if there is any error raised, it will be caught by the outer catch function:
 
 ```diff
@@ -238,10 +242,15 @@ var main = function() {
 // Photos [':)', ':D', ':/']
 ```
 
-OK, I will stop adding more changes. Let's summary what's the problem so far.
+OK, That's it. I will stop adding more changes as the code has already become complex to read.
 
-That problem is that the above data flow is getting more nested, and even harder to read. We can imaging that the nesting will keep growing
-as more async data from different scopes are needed in the later flow steps. The code readability doesn't scale well in this approach.
+Let's summary what's the problem so far.
+
+That problem is that the above data flow is getting more nested, and even harder to read.
+This is just a simplified read world example, we could imaging that the nesting will keep growing
+as more async data from different scopes are needed in the later data flow steps.
+
+The code readability doesn't scale well in this approach.
 
 How to simplify it? Is there a good practice to keep the flow straightforward and scale?
 
@@ -252,7 +261,7 @@ Straightforward code
 Well, we know it's the async nature which makes the whole data flow nested and complex.
 It would be straightforward if they were all sync, isn't it?
 
-Alright, Let's assume all the async calls in the above example are sync calls. Then our data flow in `main` will be as simple as this:
+Alright, Let's assume all the async calls in the above example are sync calls, then our data flow in `main` will be as simple as this:
 
 ```javascript
 var main = function() {
@@ -266,14 +275,14 @@ var main = function() {
 
 Flat and neat! Is it possible to make the async data flow as the above sync data flow?
 
-Yes! All we need is a function `liftp` from `bluebird-promisell` library, which is a library that provides a set of composible functions for Promises.
+Yes! All we need is a function called `liftp` from `bluebird-promisell` library, which is a library that provides a set of composible functions for Promises.
 
 "Lift" your function to make async code flat
 -------------------------------
 The function `liftp` can "lift" your function so that it can take parameters from Promises:
 
 ```diff
-var P = require('bluebird-promisell');
++var P = require('bluebird-promisell');
 
 var main = function() {
   var token = getToken();
@@ -288,9 +297,10 @@ var main = function() {
 // Photos [':)', ':D', ':/']
 ```
 
-Nice! Flat and nest as if it was sync code. More importantly it reads like sync code!
+Nice! Flat and neat as if it was sync code. More importantly it reads like sync code!
 
-But to claim that the data in the flows are all promises, I usually put a `P` in the end of the variable names as convention to indicate the variable is a Promise, so that we don't treat it as a non-Promise value by mistake.
+But for convention, I usually put a `P` in the end of the variable names in order to indicate that the variable is a Promise.
+So that we won't treat it as a non-Promise value by mistake.
 
 ```diff
 var main = function() {
@@ -317,12 +327,13 @@ var main = function() {
 // Photos [':)', ':D', ':/']
 ```
 
-Cool. Now from the name of the variable, we know it's a Promise value from an async call. And a function is wrapped by
-`liftp`, then passed with other Promise values. We can read it and understand the flow by just "unwrap" the `liftp` and
-the `P` charactors in the variable names, so the returned Promise value will make sense. Make sense?
+Cool. Now from the name of the variable like `usersP`, we know it's a Promise value from an async call.
 
-If in the future, `getPhotosByUsers` needs more data from other sync or async calls, all we need to do is just passing
-it to the "lift"ed function.
+And the function which is wrapped by `liftp`, will be feed with values from other Promiseis.
+
+To scan how data flows through these async calls, we can just "unwrap" the `liftp` and the `P` charactors in the variable names in our mind, as if the data flow was synchronous.
+
+If in the future, `getPhotosByUsers` needs more data from other sync or async calls, all we need to do is just passing the async data through the "lift"ed function.
 
 ```javascript
   var photosP = P.liftp(getPhotosByUsers)(tokenP, usersP, configP, P.purep(filterSettings));
@@ -330,17 +341,21 @@ it to the "lift"ed function.
   //                                                                       which will wrap a value into a Promise
 ```
 
-And with the above changes, we don't need to change the rest part in our data flow, no need to adjust nesting, because there is no nesting.
+That's it, we don't need to change the rest part in our data flow. No need to adjust nesting, because there is no nesting, the code is flat.
 
 You might wonder why we call it `purep`, what's the meaning of `pure`?
 
-The naming style is from functional programming, so as the other functions. I will explain more details in the later part of this blog post. But for now, let's just remember it :)
+The naming style is from functional programming, so as the other functions. I will explain more details at the end of this blog post. But for now, let's just remember it :)
 
-Sequential executing
+Sequential execution
 -----------------------------------------------------------
 
+Since the code is flat and easy to read now. Let's continue adding more requirement changes, and see if the code readability is still good.
+
 The function `getPhotosByUsers` is sending async calls in parallel. What if we want to send those async calls sequentially? Meaning, instead
-of getting photo for each user simutanislly, getting them just one by one. The reason behind it maybe because we want to slow down.
+of getting photo for each user simutanislly, getting them just one by one.
+
+Before introducing the solution, let's see a similar mophar: the `reduce` function.
 
 We know how `Array.reduce` works to reduce an array with an accumulator function and an initial value:
 
@@ -352,7 +367,7 @@ var total = [1, 2, 3].reduce(function(sum, value) {
 console.log(total); // 6
 ```
 
-We could make a "reduce" function or call it "fold" that takes the accumulator function, an initial value and an array, then returns
+We could make a "fold" function that does the above thing, which takes the accumulator function, an initial value and an array, then returns
 the reduced value.
 
 ```javascript
@@ -362,12 +377,12 @@ var fold = function(accumulator, init, array) {
 };
 ```
 
-The `fold` function will take an initial value, and the first item in an array, apply it to an accumulator function, then
-pass the result and the next item in that array to the accumulator function again, and so on. It will "fold" all values in an array into a single value.
+The `fold` function will take an initial value, and the first item in an array, apply it to an accumulator function,
+then pass the result and the next item in that array to the accumulator function again, and so on. It will "fold" all values in an array into a single value.
 
-We can take the idea of the above folding, and apply it to make sequential execution of async calls with a function call `foldp` from `bluebird-promisell`.
+We can take the idea of the above "folding", and apply it to make sequential execution of async calls with a function call `foldp` from `bluebird-promisell`.
 
-The type signatures of `foldp` is very similar to the `fold` we just created:
+The type signature of `foldp` is very similar to the `fold` we just created:
 
 ```haskell
 fold  :: (b -> a -> b)         -> b -> [a] -> [b]
@@ -383,6 +398,13 @@ If a Promise gets rejected, then the "folding" will just halt, and return the re
 So in order to get photos one by one, we can refactor `getPhotosByUsers` with `foldp`:
 
 ```diff
+// (Token, [User]) -> Promise [Photo]
+var getPhotosByUsers = function(token, users) {
+  return Promise.map(users, function(user) {
+    return getPhotoByUser(token, user);
+  });
+};
+
 +// (Token, [User]) -> Promise [Photo]
 +var getPhotosByUsersSequentially = function(token, users) {
 +  return P.foldp(function(photos, user) {
@@ -401,7 +423,7 @@ So in order to get photos one by one, we can refactor `getPhotosByUsers` with `f
 +};
 ```
 
-We can make an `appendTo` function to the code cleaner.
+We can also create an `appendTo` function to make the logic easier to read.
 
 ```diff
 +// [a] -> a -> [a]
@@ -451,11 +473,11 @@ var main = function() {
 // Photos [':)', ':D', ':/']
 ```
 
-The log result is the same, but it will take longer than the parallel version.
+The above code prints the same log as the parallel version, but since the async calls are sequential, it will take a bit longer.
 
 Parallel executing
 -----------------------------------
-Speaking of the parallel version, `bluebird-promisell` also provides a `traversep` function that iterate over an array, and send async calls in parallel.
+Speaking of the parallel version, `bluebird-promisell` also provides a `traversep` function to make async calls in parallel.
 
 We can refactor the `getPhotosByUsers` with `traversep`.
 
@@ -470,11 +492,13 @@ var getPhotosByUsers = function(token, users) {
 };
 ```
 
-No much difference to `bluebird`'s `Promise.map`, but `traversep` flips the arguments order. It takes function first, array the next
+No much difference to `bluebird`'s `Promise.map`, just that `traversep` flips the arguments order. It takes function first then the array,
 so that it's easier to compose functions.
 
-For example, at the beginning when `getPhotoByUser` and `getPhotosByUsers` don't have to take "token" as input, we could refactor `getPhotosByUsers` in a
-point-free style with `traversep`:
+How?
+
+Well, for instance, at the beginning when `getPhotoByUser` and `getPhotosByUsers` don't have to take "token" as input, we could refactor `getPhotosByUsers` in a
+"point-free" style with `traversep`:
 
 ```diff
 // User -> Promise Photo
@@ -494,26 +518,30 @@ var getPhotoByUser = function(user) {
 +var getPhotosByUsers = P.traversep(getPhotoByUser);
 ```
 
-Igorning an async result
+Ignoring an async result
 -----------------------------------
 
 OK, let's see another change requirement here.
 
-Why? because I want to show you another very useful function from `bluebird-promisell` and it's use case :)
+Why? because I want to show you another useful function from `bluebird-promisell` and its very common use case in async programming :)
 
 Let's say in the last step in our data flow, we'd like to send an email with all the photos, and wait until the email
 has been sent, then resolve the Promise with the photos.
 
-We are provided with a `sendEmailWithPhotos` that takes a list of photo and return a Promise that will resolve with nothing.
+We are provided with a `sendEmailWithPhotos` that takes a list of photo and return a Promise that will resolve with nothing after email has been sent.
 
-Alright, we could use `liftp` to implement it:
+We will make a fake `sendEmailWithPhotos` by using `delayThenResolve` again.
 
 ```diff
 +// [Photo] -> Promise void
 +var sendEmailWithPhotos = function(photos) {
 +  return delayThenResolve(1, null);
 +};
+```
 
+Alright, we could use `liftp` to implement it:
+
+```diff
 var main = function() {
   // Promise Token
   var tokenP = getToken();
@@ -542,11 +570,11 @@ var main = function() {
 // Photos [':)', ':D', ':/']
 ```
 
-It works, but actually we just need the effect of the both Promises, and the result value from the first Promise.
+It works, but actually we just need the blocking effect from the Promises `photosP` and `sentP`, and return the `photos` from `photosP`.
 
-Is there a way to say wait until the two Promises are resolved, and return the value from the first Promise?
+Is there a way to let it just wait until the two Promises are resolved, then return the value from the first Promise?
 
-Yes, that's `firstp`!
+Yes, that's exactly `firstp`!
 
 ```diff
 // [Photo] -> Promise void
@@ -582,34 +610,36 @@ var main = function() {
 // Photos [':)', ':D', ':/']
 ```
 
+We just killed another code nesting. The code is still flat and easy to read.
+
 Summary
 ----------------------------------
 Alright, I think we've gone through a lot of changes and refactors. The blog post is quite long. I'm glad you didn't close the page :). Let's summary what we've learned so far.
 
-In this blog post, we went through a few typicall async scenarios. With real world examples, we can see that as more async calls gets involved, the async solution with blurbird Promise API will introduce more nesting and the code will be hard to read. It doesn't scale well.
+In this blog post, we went through a few typicall async scenarios. With real world examples and requirement changes, we can see that as more async calls gets involved, the async solution with blurbird Promise API will introduce more nesting and the code become harder to read. The code readability doesn't scale well.
 
-We then refactored with `liftp` to make the async data flow flat, easier to read and still have all the promises chained together.
+We then refactored with `liftp` to make the async data flow flat. The logic became shorter and much easier to read, and all the promises are still chained together.
 
-Going forward, we also introduced a few patterns to make async calls sequentially or simutanislly, as well as ignoring certain Promise result using different functions from the `blurbird-promise` library.
+Then we also introduced a few patterns to make async calls sequentially or simutanislly, as well as ignoring certain Promise result using different functions from the `blurbird-promise` library.
 
-All these functions are composible, meaning they take functions and return functions to work with Promises. Very practical for functional programming.
+All these functions from `bluebird-promisell` are composible, meaning they take functions and return functions to work with Promises. Very practical for functional programming.
 
-I hope by now you should understand far more of async programming in a "sync" style in Javascript.
+I hope by now you should understand far more of async programming in a functional programming style with Promises than a few while ago.
 
 Want to learn more?
 ----------------------------------
-There are more functions in the `bluebird-promisell` library that allows us to do filtering, error handling and more. Please check it out.
+There are [more functions](https://github.com/zhangchiqing/bluebird-promisell#api) in the `bluebird-promisell` library that allows us to do filtering, error handling, [validation](https://github.com/zhangchiqing/bluebird-promisell/blob/master/test.js#L203) and more. Please check it out.
 
 PS: Function names
 ---------------------
 Yes, I didn't forget about the function names :)
 
-Why those functions in the library have so many weired name? What do `pure`, `lift`, `traverse` etc?
+Why those functions in the library have so many weired names? `pure`, `lift`, `traverse`? What do they mean?
 
-Well, this library is made for functional programming with Promises. These names are all from functional programming.
+Well, this library is made for functional programming with Promises. These names are all derived from functional programming.
 
-In functional programming, we make pure functions. Pure functions are functions that has no side effect, meaning given the same input, it will always return the same output.
+In functional programming, people make pure functions. Pure functions are functions that has no side effect, meaning given the same input, it will always return the same output.
 
-Since async calls are all side effects, there is a pattern called "Monad" in functional programming to "wrap" side effects that includes async calls.
+Since async calls are all side effects, in order to make it "pure", there is a pattern called Monad which will "wrap" side effects that includes async calls.
 
 Promise is Monad as well. To be a "Monad", it must implement a few functions. And those functions are called `pure`, `lift`, `traverse` etc. That's why the library uses the similar names.

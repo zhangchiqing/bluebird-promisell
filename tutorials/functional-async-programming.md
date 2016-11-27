@@ -1,5 +1,3 @@
------
-
 Functional Async Programming with Promises
 ===============================================
 

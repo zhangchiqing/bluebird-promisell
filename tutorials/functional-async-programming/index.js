@@ -1,4 +1,5 @@
 var P = require('../../index.js');
+var Promise = require('bluebird');
 
 // Number, a -> Promise a
 var delayThenResolve = function(secs, data) {
@@ -9,32 +10,51 @@ var delayThenResolve = function(secs, data) {
   });
 };
 
+// Number, String -> Promise a
+var delayThenReject = function(secs, msg) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      reject(new Error(msg));
+    }, secs * 1000);
+  });
+};
+
 // () -> Promise Token
 var getToken = function() {
+  console.log('getToken');
   return delayThenResolve(1, 'token abc');
 };
 
 // () -> Promise Secret
 var getSecret = function() {
+  console.log('getSecret');
   return delayThenResolve(1, 'secret h9irnvxwri');
 };
 
 // Token, Secret -> Promise [User]
 var getUsers = function(token, secret) {
+  console.log('getUsers');
   return delayThenResolve(1, ['A', 'B', 'C']);
 };
 
 // Token, User -> Promise String
 var getPhotoByTokenAndUser = function(token, user) {
+  console.log('getPhotoByTokenAndUser for User', user);
   var photo = user === 'A' ? ':)' :
               user === 'B' ? ':D' :
               user === 'C' ? ':/' :
               ':-|';
+  // if (user === 'B') {
+  //   return delayThenReject(1, 'Fail to getPhotoByTokenAndUser for User B');
+  // } else {
+  //   return delayThenResolve(1, photo);
+  // }
   return delayThenResolve(1, photo);
 };
 
 // [Photo] -> Promise void
 var sendEmailWithPhotos = function(photos) {
+  console.log('sendEmailWithPhotos');
   return delayThenResolve(1, null);
 };
 

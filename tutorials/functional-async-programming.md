@@ -379,7 +379,7 @@ We can take the idea of the above "folding" and apply it to make sequential exec
 
 How does `foldp` work? It’s very similar to the `fold` we just created. It takes an initial value, and the first item in an array, and applies it to an accumulator function which will return a Promise. It will wait until the Promise gets resolved, then pass the result and the next item in that array to the accumulator function again, and so on. It will "fold" all values in an array sequentially into a single value.
 
-Since all Promises are chained together, if a Promise gets rejected, then the "folding" will halt, and return the rejected error as the fulfilled Promise.
+Since all Promises are chained together, if a Promise gets rejected, then the "folding" will halt, and return the rejected error as the fulfilled Promise. I will talk about "Error Handling" in the last section of this tutorial.
 
 So in order to get photos one by one, we can refactor `getPhotosByUsers` with `foldp`:
 
@@ -595,6 +595,108 @@ var main = function() {
 ```
 
 We just killed another code nesting. The code is still flat and easy to read.
+
+**Error Handling**
+----------------------------------
+
+Let's take a look at how this approach handles errors. In [the first section](https://github.com/zhangchiqing/bluebird-promisell/blob/error/tutorials/functional-async-programming.md#start-with-an-async-call) of this tutorial, we've shown the code for handling errors from the `main` function. It prints error with `console.log`.
+
+```
+main()
+.then(function(photo) {
+  console.log('Photo', photo);
+})
+.catch(function(error) {
+  console.log('Error', error);
+});
+```
+
+This error handler is able to catch any error from `main` if the promises in which are chained together.
+
+`liftp`, `traversep` and `foldp` are all able to chain promises together which is very convinent because error handling can then be centralized by just catching the error from the last returned Promise.
+So it leaves the choice to the function caller of whether or not to catch the error, and how to handle the error.
+
+`liftp`, `traversep` and `foldp` chain promises in different ways:
+
+For `liftp`, since it takes Promises, and returns a "chained" Promise, it means if any Promise from the input is rejected, the "lifted" function won't be called.
+For `traversep`, all async calls will be running in parallel, Promises are "chained" in a way that as soon as one of the async calls hit an error,
+the returned Promise will be fullfilled with that error right away.
+For `foldp`, async calls are running sequentially, as soon as one of the async calls hit an error,
+it stops right away and fullfills the returned Promise with that error without calling the rest.
+
+To verify this, I'm going to let one of the async calls in our example return error, and add some logging to show what error will be caught and what async calls will be executed when error happens.
+
+I will make a `delayThenReject` function for faking async calls that will return a rejected Promise with an error.
+
+```javascript
++// Number, String -> Promise a
++var delayThenReject = function(secs, msg) {
++  return new Promise(function(resolve, reject) {
++    setTimeout(function() {
++      reject(new Error(msg));
++    }, secs * 1000);
++  });
++};
+
+// () -> Promise Token
+var getToken = function() {
++  console.log('getToken');
+  return delayThenResolve(1, 'token abc');
+};
+
+// () -> Promise Secret
+var getSecret = function() {
++  console.log('getToken');
+  return delayThenResolve(1, 'secret h9irnvxwri');
+};
+
+// Token, Secret -> Promise [User]
+var getUsers = function(token, secret) {
++  console.log('getUsers');
+  return delayThenResolve(1, ['A', 'B', 'C']);
+};
+
+// Token, User -> Promise String
+var getPhotoByTokenAndUser = function(token, user) {
++  console.log('getPhotoByTokenAndUser');
+  var photo = user === 'A' ? ':)' :
+              user === 'B' ? ':D' :
+              user === 'C' ? ':/' :
+              ':-|';
++  if (user === 'B') {
++    return delayThenReject(1, 'Fail to getPhotoByTokenAndUser for User B');
++  } else {
+    return delayThenResolve(1, photo);
++  }
+};
+
+// [Photo] -> Promise void
+var sendEmailWithPhotos = function(photos) {
++  console.log('sendEmailWithPhotos');
+  return delayThenResolve(1, null);
+};
+
+main();
+```
+
+With the above changes, `getPhotoByTokenAndUser` will return an error for User B after 1 second. Here is the error log:
+
+```
+> node index.js
+getToken
+getSecret
+getUsers
+getPhotoByTokenAndUser for User A
+getPhotoByTokenAndUser for User B
+Error [Error: Fail to getPhotoByTokenAndUser for User B]
+```
+
+The above log shows that `getToken`, `getSecret` and `getUser` were executed before hitting the error. And when calling `getPhotoByTokenAndUser` sequentially,
+it called for User A and User B, but not User C, because it hit an error for User B. Also `sendEmailWithPhotos` was not called, because `photosP` was a rejected Promise.
+
+Nice! The error handler for `main` function is able to handle errors from any of the async calls.
+
+You can also try letting other functions return rejected error, and they will all be caught by the centralized error handler.
 
 **Summary**
 ----------------------------------

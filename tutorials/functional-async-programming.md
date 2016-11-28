@@ -626,7 +626,7 @@ To verify this, I'm going to let one of the async calls in our example return er
 
 I will make a `delayThenReject` function for faking async calls that will return a rejected Promise.
 
-```javascript
+```diff
 +// Number, String -> Promise a
 +var delayThenReject = function(secs, msg) {
 +  return new Promise(function(resolve, reject) {

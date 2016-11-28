@@ -3,7 +3,7 @@ Functional Async Programming with Promises
 
 I've seen many people struggle with async programming in JavaScript. We all know that [a callback approach doesn't scale](http://callbackhell.com). Meanwhile, Promises can turn into a ["Promise hell"](https://medium.com/@pyrolistical/how-to-get-out-of-promise-hell-8c20e0ab0513#.g8yz0arwr). When I was looking for better solutions, I learned functional programming and got inspired. I created a library `bluebird-promisell` to make async programming easier with Promises.
 
-In this tutorial, I’ll provide some real-world examples to illustrate the functional approach of async programming with Promises. I hope that this will help increase the readability and scalability of your codebase as much as it has mine!
+In this tutorial, I’ll provide some real-world examples to illustrate the functional approach of async programming with Promises. I hope that this will help increase the readability and scalability of your codebase.
 
 **Start with an async call**
 ----------------
@@ -377,7 +377,7 @@ We can take the idea of the above "folding" and apply it to make sequential exec
 
 How does `foldp` work? It’s very similar to the `fold` we just created. It takes an initial value, and the first item in an array, and applies it to an accumulator function which will return a Promise. It will wait until the Promise gets resolved, then pass the result and the next item in that array to the accumulator function again, and so on. It will "fold" all values in an array sequentially into a single value.
 
-Since all Promises are chained together, if a Promise gets rejected, then the "folding" will halt, and return the rejected error as the fulfilled Promise. I will talk about "Error Handling" in the last section of this tutorial.
+Since all Promises are chained one after another, if one of them gets rejected, then the "folding" will halt, and the error will be returned as the fullfilled Promise value. I will talk about "Error Handling" in more details in the last section of this tutorial.
 
 So in order to get photos one by one, we can refactor `getPhotosByUsers` with `foldp`:
 
@@ -597,9 +597,9 @@ We just killed another code nesting. The code is still flat and easy to read.
 **Error Handling**
 ----------------------------------
 
-Let's take a look at how this approach handles errors. In [the first section](https://github.com/zhangchiqing/bluebird-promisell/blob/error/tutorials/functional-async-programming.md#start-with-an-async-call) of this tutorial, we've shown the code for handling errors from the `main` function. It prints error with `console.log`.
+Let's take a look at how this approach handles errors. In [the first section](https://github.com/zhangchiqing/bluebird-promisell/blob/error/tutorials/functional-async-programming.md#start-with-an-async-call) of this tutorial, we've shown the code for handling errors raised from the `main` function. It prints error with `console.log`.
 
-```
+```javascript
 main()
 .then(function(photo) {
   console.log('Photo', photo);
@@ -609,22 +609,22 @@ main()
 });
 ```
 
-This error handler is able to catch any error from `main` if the promises in which are chained together.
+This error handler is able to catch any error from `main` if the Promises are chained together.
 
-`liftp`, `traversep` and `foldp` are all able to chain promises together which is very convinent because error handling can then be centralized by just catching the error from the last returned Promise.
+`liftp`, `traversep` and `foldp` are all able to chain Promises together which is very convinent because error handling can then be centralized by just catching the error from the last returned Promise.
 So it leaves the choice to the function caller of whether or not to catch the error, and how to handle the error.
 
-`liftp`, `traversep` and `foldp` chain promises in different ways:
+`liftp`, `traversep` and `foldp` chain Promises in different ways:
 
 For `liftp`, since it takes Promises, and returns a "chained" Promise, it means if any Promise from the input is rejected, the "lifted" function won't be called.
-For `traversep`, all async calls will be running in parallel, Promises are "chained" in a way that as soon as one of the async calls hit an error,
-the returned Promise will be fullfilled with that error right away.
-For `foldp`, async calls are running sequentially, as soon as one of the async calls hit an error,
-it stops right away and fullfills the returned Promise with that error without calling the rest.
+
+For `traversep`, all async calls will be running in parallel. It returns error as soon as one of the async calls hit an error.
+
+For `foldp`, async calls are running sequentially, as soon as one of the async calls hit an error, it stops right away and returns that error without calling the rest.
 
 To verify this, I'm going to let one of the async calls in our example return error, and add some logging to show what error will be caught and what async calls will be executed when error happens.
 
-I will make a `delayThenReject` function for faking async calls that will return a rejected Promise with an error.
+I will make a `delayThenReject` function for faking async calls that will return a rejected Promise.
 
 ```javascript
 +// Number, String -> Promise a

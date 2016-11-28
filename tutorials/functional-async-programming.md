@@ -673,8 +673,6 @@ var sendEmailWithPhotos = function(photos) {
 +  console.log('sendEmailWithPhotos');
   return delayThenResolve(1, null);
 };
-
-main();
 ```
 
 With the above changes, `getPhotoByTokenAndUser` will return an error for User B after 1 second. Here is the error log:

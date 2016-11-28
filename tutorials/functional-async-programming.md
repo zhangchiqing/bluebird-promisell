@@ -1,7 +1,7 @@
 Functional Async Programming with Promises
 ===============================================
 
-I've seen many people struggle with async programming in JavaScript. We all know that a callback approach doesn't scale. Meanwhile, Promises can turn into a "Promise hell”. When I was looking for better solutions, I learned functional programming and got inspired. I created a library `bluebird-promisell` to make async programming easier with Promises.
+I've seen many people struggle with async programming in JavaScript. We all know that [a callback approach doesn't scale](http://callbackhell.com). Meanwhile, Promises can turn into a ["Promise hell"](https://medium.com/@pyrolistical/how-to-get-out-of-promise-hell-8c20e0ab0513#.g8yz0arwr). When I was looking for better solutions, I learned functional programming and got inspired. I created a library `bluebird-promisell` to make async programming easier with Promises.
 
 In this tutorial, I’ll provide some real-world examples to illustrate the functional approach of async programming with Promises. I hope that this will help increase the readability and scalability of your codebase as much as it has mine!
 

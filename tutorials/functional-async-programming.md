@@ -618,9 +618,9 @@ So it leaves the choice to the function caller of whether or not to catch the er
 
 For `liftp`, since it takes Promises, and returns a "chained" Promise, it means if any Promise from the input is rejected, the "lifted" function won't be called.
 
-For `traversep`, all async calls will be running in parallel. It returns error as soon as one of the async calls hit an error.
+For `traversep`, all async calls will be running in parallel. It returns error as soon as any of them hits an error.
 
-For `foldp`, async calls are running sequentially, as soon as one of the async calls hit an error, it stops right away and returns that error without calling the rest.
+For `foldp`, async calls are running sequentially, as soon as one of them hits an error, it stops right away and returns that error without calling the rest.
 
 To verify this, I'm going to let one of the async calls in our example return error, and add some logging to show what error will be caught and what async calls will be executed when error happens.
 
@@ -689,8 +689,9 @@ getPhotoByTokenAndUser for User B
 Error [Error: Fail to getPhotoByTokenAndUser for User B]
 ```
 
-The above log shows that `getToken`, `getSecret` and `getUser` were executed before hitting the error. And when calling `getPhotoByTokenAndUser` sequentially,
-it called for User A and User B, but not User C, because it hit an error for User B. Also `sendEmailWithPhotos` was not called, because `photosP` was a rejected Promise.
+The above log shows that `getToken`, `getSecret` and `getUser` were executed before hitting the error.
+`getPhotoByTokenAndUser` was called sequentially for User A and User B, but not User C, because it hit an error for User B.
+Also `sendEmailWithPhotos` was not called, because `photosP` was a rejected Promise.
 
 Nice! The error handler for `main` function is able to handle errors from any of the async calls.
 

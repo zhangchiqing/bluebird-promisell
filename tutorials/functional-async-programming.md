@@ -715,7 +715,7 @@ Here is [the link to the complete code example](https://github.com/zhangchiqing/
 
 **Want to learn more?**
 ----------------------------------
-There are [more functions](https://github.com/zhangchiqing/bluebird-promisell#api) in the `bluebird-promisell` library that allow us to do filtering, error handling, [validation](https://github.com/zhangchiqing/bluebird-promisell/blob/master/test.js#L203), and more. Please check it out.
+There are [more functions](https://github.com/zhangchiqing/bluebird-promisell#api) in the `bluebird-promisell` library that allow us to do filtering, error handling, [validation](https://gist.github.com/zhangchiqing/30881b5f2791a90391a32467aee9ca57), and more. Please check it out.
 
 **P.S.: Function names**
 ---------------------

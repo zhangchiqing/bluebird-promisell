@@ -611,7 +611,7 @@ main()
 
 This error handler is able to catch any error from `main` if the Promises are chained together.
 
-`liftp`, `traversep` and `foldp` are all able to chain Promises together which is very convinent because error handling can then be centralized by just catching the error from the last returned Promise.
+`liftp`, `traversep` and `foldp` are all able to chain Promises together which is very convenient because error handling can then be centralized by just catching the error from the last returned Promise.
 So it leaves the choice to the function caller of whether or not to catch the error, and how to handle the error.
 
 `liftp`, `traversep` and `foldp` chain Promises in different ways:
@@ -622,7 +622,7 @@ For `traversep`, all async calls will be running in parallel. It returns error a
 
 For `foldp`, async calls are running sequentially, as soon as one of them hits an error, it stops right away and returns that error without calling the rest.
 
-To verify this, I'm going to let one of the async calls in our example return error, and add some logging to show what error will be caught and what async calls will be executed when error happens.
+To verify this, I'm going to let one of the async calls return error, and add some logging to show what error will be caught and what async calls will be executed when error happens.
 
 I will make a `delayThenReject` function for faking async calls that will return a rejected Promise.
 

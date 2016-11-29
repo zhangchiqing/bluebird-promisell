@@ -410,7 +410,7 @@ exports.resolveError = function(fn) {
   };
 };
 
-//# toPromise :: (a -> Boolean) -> (a -> Error) -> a -> Promise a
+//# toPromise :: ((a -> Boolean), (a -> Error)) -> a -> Promise a
 //
 //. Takes a `predict` function and a `toError` function, return a curried
 //. function that can take a value and return a Promise.

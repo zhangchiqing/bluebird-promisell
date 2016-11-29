@@ -295,7 +295,7 @@ Recover from a rejected Promise
 promise
 false
 
-<h3 name="toPromise"><code><a href="./index.js#L413">toPromise :: (a -> Boolean) -> (a -> Error) -> a -> Promise a</a></code></h3>
+<h3 name="toPromise"><code><a href="./index.js#L413">toPromise :: ((a -> Boolean), (a -> Error)) -> a -> Promise a</a></code></h3>
 
 Takes a `predict` function and a `toError` function, return a curried
 function that can take a value and return a Promise.

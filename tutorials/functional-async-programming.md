@@ -82,20 +82,20 @@ OK. What if we need to make an async call to get the list of users first?
 
 Let's create a function `delayThenResolve` for faking async calls. Then we use it to implement `getUsers`.
 
-```diff
-+// Returns a function that will return the given data in a resolved Promise after certain seconds
-+var delayThenResolve = function(secs, data) {
-+  return new Promise(function(resolve, reject) {
-+    setTimeout(function() {
-+      resolve(data);
-+    }, secs * 1000);
-+  });
-+};
+```javascript
+// Returns a function that will return the given data in a resolved Promise after certain seconds
+var delayThenResolve = function(secs, data) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      resolve(data);
+    }, secs * 1000);
+  });
+};
 
-+// () -> Promise [User]
-+var getUsers = function() {
-+  return delayThenResolve(1, ['A', 'B', 'C']);
-+};
+// () -> Promise [User]
+var getUsers = function() {
+  return delayThenResolve(1, ['A', 'B', 'C']);
+};
 
 getUsers()
 .then(function(users) {
@@ -300,26 +300,21 @@ Nice! Flat and neat as if it were sync code. More importantly, it reads like syn
 
 But for convention and to avoid treating functions as a non-Promise value by mistake, I usually put a `P` at the end to indicate a variable is a Promise, and put their types in the comment.
 
-```diff
+```javascript
 var main = function() {
-+  // Promise Token
--  var token = getToken();
-+  var tokenP = getToken();
-+
-+  // Promise Secret
--  var secret = getSecret();
-+  var secretP = getSecret();
-+
-+  // Promise [User]
--  var users = P.liftp(getUsers)(token, secret);
-+  var usersP = P.liftp(getUsers)(tokenP, secretP);
-+
-+  // Promise [Photo]
--  var photos = P.liftp(getPhotosByUsers)(token, users);
-+  var photosP = P.liftp(getPhotosByUsers)(tokenP, usersP);
+  // Promise Token
+  var tokenP = getToken();
 
--  return photos;
-+  return photosP;
+  // Promise Secret
+  var secretP = getSecret();
+
+  // Promise [User]
+  var usersP = P.liftp(getUsers)(tokenP, secretP);
+
+  // Promise [Photo]
+  var photosP = P.liftp(getPhotosByUsers)(tokenP, usersP);
+
+  return photosP;
 };
 
 // Photos [':)', ':D', ':/']
@@ -381,7 +376,7 @@ Since all Promises are chained one after another, if one of them gets rejected, 
 
 So in order to get photos one by one, we can refactor `getPhotosByUsers` with `foldp`:
 
-```diff
+```javascript
 // (Token, [User]) -> Promise [Photo]
 var getPhotosByTokenAndUsers = function(token, users) {
   return Promise.map(users, function(user) {
@@ -389,21 +384,21 @@ var getPhotosByTokenAndUsers = function(token, users) {
   });
 };
 
-+// (Token, [User]) -> Promise [Photo]
-+var getPhotosByTokenAndUsersSequentially = function(token, users) {
-+  return P.foldp(function(photos, user) {
-+    // Promise Photo
-+    var photoP = getPhotoByTokenAndUser(token, user);
-+
-+    // Promise [Photo]
-+    var addedP = P.liftp1(function(photo) {
-+      //           ^^^^^^  "liftp1" is equivalent to "liftp" but has better performance when
-+      //                   the function to be lifted only takes one parameter.
-+      return photos.concat([photo]);
-+    })(photos);
-+
-+    return addedP;
-+  })([])(users);
+// (Token, [User]) -> Promise [Photo]
+var getPhotosByTokenAndUsersSequentially = function(token, users) {
+  return P.foldp(function(photos, user) {
+    // Promise Photo
+    var photoP = getPhotoByTokenAndUser(token, user);
+
+    // Promise [Photo]
+    var addedP = P.liftp1(function(photo) {
+      //           ^^^^^^  "liftp1" is equivalent to "liftp" but has better performance when
+      //                   the function to be lifted only takes one parameter.
+      return photos.concat([photo]);
+    })(photos);
+
+    return addedP;
+  })([])(users);
 +};
 ```
 
@@ -597,7 +592,7 @@ We just killed another code nesting. The code is still flat and easy to read.
 **Error Handling**
 ----------------------------------
 
-Let's take a look at how this approach handles errors. In [the first section](https://github.com/zhangchiqing/bluebird-promisell/blob/error/tutorials/functional-async-programming.md#start-with-an-async-call) of this tutorial, we've shown the code for handling errors raised from the `main` function. It prints error with `console.log`.
+Let's take a look at how this approach handles errors. In [the first section](https://github.com/zhangchiqing/bluebird-promisell/blob/master/tutorials/functional-async-programming.md#start-with-an-async-call) of this tutorial, we've shown the code for handling errors raised from the `main` function. It prints error with `console.log`.
 
 ```javascript
 main()
@@ -711,7 +706,7 @@ All these functions from `bluebird-promisell` are composable, meaning they take 
 
 I hope you learned a thing or two about async programming in a functional programming style with Promises.
 
-Here is [the link to the complete code example](https://github.com/zhangchiqing/bluebird-promisell/blob/tutorial/tutorials/functional-async-programming/).
+Here is [the link to the complete code example](https://github.com/zhangchiqing/bluebird-promisell/blob/master/tutorials/functional-async-programming/index.js).
 
 **Want to learn more?**
 ----------------------------------

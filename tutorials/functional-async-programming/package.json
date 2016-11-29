@@ -1,0 +1,6 @@
+{
+  "name": "functional-async-programming",
+  "dependencies": {
+    "bluebird": "^3.4.6"
+  }
+}

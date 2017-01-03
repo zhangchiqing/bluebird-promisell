@@ -297,9 +297,9 @@ false
 
 <h3 name="toPromise"><code><a href="./index.js#L413">toPromise :: ((a -> Boolean), (a -> Error)) -> a -> Promise a</a></code></h3>
 
-Takes a `predict` function and a `toError` function, return a curried
+Takes a predicate and a `toError` function, return a curried
 function that can take a value and return a Promise.
-If this value passes the predict, then return a resolved Promise with
+If this value passes the predicate, then return a resolved Promise with
 that value, otherwise pass the value to the `toError` function, and
 return a rejected Promise with the output of the `toError` function.
 

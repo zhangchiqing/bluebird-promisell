@@ -443,3 +443,32 @@ exports.toPromise = function(predict, toError) {
     }
   };
 };
+
+//# bimap :: (a -> Promise b) -> (Error -> Promise b) -> Promise a -> Promise b
+//
+//. Takes two functions and return a function that can take a Promise and return a Promise.
+//. If the received Promise is resolved, the first function will be used to map over the resolved value;
+//. If the received Promise is rejected, the second function will be used to map over the Error.
+//
+//. Like Promise.prototype.then function, but takes functions first.
+//. ```js
+//. var add1OrReject = bimap(
+//.   function(n) { return n + 1; },
+//.   function(error) {
+//.     return new Error('can not add value for ' + error.message);
+//.   }
+//. );
+//.
+//. > add1OrReject(P.purep(2))
+//. promise
+//. 3
+//.
+//. > add1OrReject(Promise.reject(new Error('NaN')));
+//. promise
+//. 'can not add value for NaN'
+//. ```
+exports.bimap = function(mapResolved, mapError) {
+  return function(p) {
+    return p.then(mapResolved, mapError);
+  };
+};

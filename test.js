@@ -70,6 +70,11 @@ describe('liftp', function() {
     });
   });
 
+  it('should throw if type mismatch', function() {
+    return expect(function() {
+      liftp(123);
+    }).to.throw(TypeError);
+  });
 });
 
 describe('liftp1', function() {
@@ -78,9 +83,15 @@ describe('liftp1', function() {
       return user.email;
     })(Promise.resolve({ email: 'abc@example.com' }));
   });
+
+  it('should throw if type mismatch', function() {
+    return expect(function() {
+      liftp1(123);
+    }).to.throw(TypeError);
+  });
 });
 
-describe('liftp1', function() {
+describe('liftp2', function() {
   it('resolve', function() {
     return liftp2(function(a, b) {
       return a + b;
@@ -91,8 +102,7 @@ describe('liftp1', function() {
   });
 });
 
-
-describe('liftp1', function() {
+describe('liftp2', function() {
   it('resolve', function() {
     return liftp2(function(a, b) {
       return a + b;

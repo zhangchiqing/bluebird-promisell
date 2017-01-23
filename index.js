@@ -170,6 +170,10 @@ exports.purep = function(a) {
   return Promise.resolve(a);
 };
 
+exports.reject = Promise.reject;
+
+var noop = function() { };
+
 // apply :: (a -> b ... -> n -> x) -> [a, b ... n] -> x
 var apply = function(fn) {
   return function(args) {
@@ -233,6 +237,17 @@ var liftp1 = function(fn) {
 //. ```
 exports.fmapp = liftp1;
 
+//# voidp :: Promise a -> Promise undefined
+//
+//. Takes a Promise, returns a Promise that resolves with undefined when the input promise is resolved,
+//. or reject with the same error when the input promise is rejected.
+//
+//. ```js
+//. > voidp(purep(12)).then(console.log)
+//. promise
+//. undefined
+//. ```
+exports.voidp = liftp1(noop);
 
 //# sequencep :: Array Promise a -> Promise Array a
 //

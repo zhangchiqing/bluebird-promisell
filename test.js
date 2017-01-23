@@ -10,7 +10,9 @@ var liftp5 = require('./index').liftp5;
 var firstp = require('./index').firstp;
 var secondp = require('./index').secondp;
 var purep = require('./index').purep;
+var reject = require('./index').reject;
 var fmapp = require('./index').fmapp;
+var voidp = require('./index').voidp;
 var sequencep = require('./index').sequencep;
 var traversep = require('./index').traversep;
 var pipep = require('./index').pipep;
@@ -37,6 +39,14 @@ describe('purep', function() {
   it('should resolve', function() {
     return purep(3).then(function(r) {
       expect(r).to.equal(3);
+    });
+  });
+});
+
+describe('reject', function() {
+  it('should reject', function() {
+    return reject(new Error('new Error')).catch(function(error) {
+      expect(error.message).to.equal('new Error');
     });
   });
 });
@@ -88,6 +98,21 @@ describe('liftp1', function() {
     return expect(function() {
       liftp1(123);
     }).to.throw(TypeError);
+  });
+});
+
+describe('voidp', function() {
+  it('should resolve', function() {
+    return voidp(purep(12)).then(function(v) {
+      expect(v).to.equal(undefined);
+    });
+  });
+
+  it('should reject with same error', function() {
+    var err = new Error('should reject');
+    return voidp(reject(err)).catch(function(e) {
+      expect(e).to.equal(err);
+    });
   });
 });
 

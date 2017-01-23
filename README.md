@@ -144,7 +144,7 @@ promise
 3
 ```
 
-<h3 name="fmapp"><code><a href="./index.js#L200">fmapp :: (a -> b) -> Promise a -> Promise b</a></code></h3>
+<h3 name="fmapp"><code><a href="./index.js#L229">fmapp :: (a -> b) -> Promise a -> Promise b</a></code></h3>
 
 Transforms a Promise of value a into a Promise of value b
 
@@ -154,7 +154,18 @@ promise
 7
 ```
 
-<h3 name="sequencep"><code><a href="./index.js#L216">sequencep :: Array Promise a -> Promise Array a</a></code></h3>
+<h3 name="voidp"><code><a href="./index.js#L240">voidp :: Promise a -> Promise undefined</a></code></h3>
+
+Takes a Promise, returns a Promise that resolves with undefined when the input promise is resolved,
+or reject with the same error when the input promise is rejected.
+
+```js
+> voidp(purep(12)).then(console.log)
+promise
+undefined
+```
+
+<h3 name="sequencep"><code><a href="./index.js#L252">sequencep :: Array Promise a -> Promise Array a</a></code></h3>
 
 Transforms an array of Promise of value a into a Promise of array of a.
 
@@ -164,7 +175,7 @@ promise
 [3, 4]
 ```
 
-<h3 name="traversep"><code><a href="./index.js#L229">traversep :: (a -> Promise b) -> Array a -> Promise Array b</a></code></h3>
+<h3 name="traversep"><code><a href="./index.js#L266">traversep :: (a -> Promise b) -> Array a -> Promise Array b</a></code></h3>
 
 Maps a function that takes a value a and returns a Promise of value b over an array of value a,
 then use `sequencep` to transform the array of Promise b into a Promise of array b
@@ -176,7 +187,7 @@ promise
 [5, 6, 7]
 ```
 
-<h3 name="pipep"><code><a href="./index.js#L244">pipep :: [(a -> Promise b), (b -> Promise c), ... (m -> Promise n)] -> a -> Promise n</a></code></h3>
+<h3 name="pipep"><code><a href="./index.js#L282">pipep :: [(a -> Promise b), (b -> Promise c), ... (m -> Promise n)] -> a -> Promise n</a></code></h3>
 
 Performs left-to-right composition of an array of Promise-returning functions.
 
@@ -189,7 +200,7 @@ promise
 90
 ```
 
-<h3 name="liftp"><code><a href="./index.js#L264">liftp :: (a -> b -> ... n -> x) -> Promise a -> Promise b -> ... -> Promise n -> Promise x</a></code></h3>
+<h3 name="liftp"><code><a href="./index.js#L303">liftp :: (a -> b -> ... n -> x) -> Promise a -> Promise b -> ... -> Promise n -> Promise x</a></code></h3>
 
 Takes a function so that this function is able to read input values from resolved Promises,
 and return a Promise that will resolve with the output value of that function.
@@ -203,7 +214,7 @@ promise
 35
 ```
 
-<h3 name="liftp1"><code><a href="./index.js#L283">liftp1 :: (a -> b) -> Promise a -> Promise b</a></code></h3>
+<h3 name="liftp1"><code><a href="./index.js#L323">liftp1 :: (a -> b) -> Promise a -> Promise b</a></code></h3>
 
 Takes a function and apply this function to the resolved Promise value, and return
 a Promise that will resolve with the output of that function.
@@ -216,7 +227,7 @@ promise
 abc@example.com
 ```
 
-<h3 name="firstp"><code><a href="./index.js#L299">firstp :: Promise a -> Promise b -> Promise a</a></code></h3>
+<h3 name="firstp"><code><a href="./index.js#L339">firstp :: Promise a -> Promise b -> Promise a</a></code></h3>
 
 Takes two Promises and return the first if both of them are resolved
 
@@ -230,7 +241,7 @@ promise
 Error 3
 ```
 
-<h3 name="secondp"><code><a href="./index.js#L316">secondp :: Promise a -> Promise b -> Promise b</a></code></h3>
+<h3 name="secondp"><code><a href="./index.js#L356">secondp :: Promise a -> Promise b -> Promise b</a></code></h3>
 
 Takes two Promises and return the second if both of them are resolved
 
@@ -244,7 +255,7 @@ promise
 Error 3
 ```
 
-<h3 name="filterp"><code><a href="./index.js#L331">filterp :: (a -> Promise Boolean) -> Array a -> Promise Array a</a></code></h3>
+<h3 name="filterp"><code><a href="./index.js#L371">filterp :: (a -> Promise Boolean) -> Array a -> Promise Array a</a></code></h3>
 
 Takes a predicat that returns a Promise and an array of a, returns a Promise of array a
 which satisfy the predicate.
@@ -255,7 +266,7 @@ promise
 [4]
 ```
 
-<h3 name="foldp"><code><a href="./index.js#L347">foldp :: (b -> a -> Promise b) -> b -> Array a -> Promise b</a></code></h3>
+<h3 name="foldp"><code><a href="./index.js#L387">foldp :: (b -> a -> Promise b) -> b -> Array a -> Promise b</a></code></h3>
 
 Returns a Promise of value b by iterating over an array of value a, successively
 calling the iterator function and passing it an accumulator value of value b,
@@ -270,7 +281,7 @@ promise
 10
 ```
 
-<h3 name="mapError"><code><a href="./index.js#L375">mapError :: (Error -> Error) -> Promise a -> Promise a</a></code></h3>
+<h3 name="mapError"><code><a href="./index.js#L415">mapError :: (Error -> Error) -> Promise a -> Promise a</a></code></h3>
 
 Transform the rejected Error.
 
@@ -283,7 +294,7 @@ Transform the rejected Error.
 rejected promise
 ```
 
-<h3 name="resolveError"><code><a href="./index.js#L396">resolveError :: (Error -> b) -> Promise a -> Promise b</a></code></h3>
+<h3 name="resolveError"><code><a href="./index.js#L436">resolveError :: (Error -> b) -> Promise a -> Promise b</a></code></h3>
 
 Recover from a rejected Promise
 
@@ -295,11 +306,11 @@ Recover from a rejected Promise
 promise
 false
 
-<h3 name="toPromise"><code><a href="./index.js#L413">toPromise :: ((a -> Boolean), (a -> Error)) -> a -> Promise a</a></code></h3>
+<h3 name="toPromise"><code><a href="./index.js#L453">toPromise :: ((a -> Boolean), (a -> Error)) -> a -> Promise a</a></code></h3>
 
-Takes a predicate and a `toError` function, return a curried
+Takes a `predict` function and a `toError` function, return a curried
 function that can take a value and return a Promise.
-If this value passes the predicate, then return a resolved Promise with
+If this value passes the predict, then return a resolved Promise with
 that value, otherwise pass the value to the `toError` function, and
 return a rejected Promise with the output of the `toError` function.
 
@@ -317,4 +328,29 @@ promise
 > validateGreaterThan0(-10)
 rejected promise
 Error 'value is not greater than 0'
+```
+
+<h3 name="bimap"><code><a href="./index.js#L487">bimap :: (a -> Promise b) -> (Error -> Promise b) -> Promise a -> Promise b</a></code></h3>
+
+Takes two functions and return a function that can take a Promise and return a Promise.
+If the received Promise is resolved, the first function will be used to map over the resolved value;
+If the received Promise is rejected, the second function will be used to map over the Error.
+
+Like Promise.prototype.then function, but takes functions first.
+
+```js
+var add1OrReject = bimap(
+  function(n) { return n + 1; },
+  function(error) {
+    return new Error('can not add value for ' + error.message);
+  }
+);
+
+> add1OrReject(P.purep(2))
+promise
+3
+
+> add1OrReject(Promise.reject(new Error('NaN')));
+promise
+'can not add value for NaN'
 ```

@@ -6,9 +6,9 @@
   "scripts": {
     "test": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly --report html",
     "doc": "npm run test && transcribe --url './{filename}#L{line}' -- index.js > README.md",
-    "release-major": "npm run doc && xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment major",
-    "release-minor": "npm run doc && xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment minor",
-    "release-patch": "npm run doc && xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment patch"
+    "release-major": "xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment major",
+    "release-minor": "xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment minor",
+    "release-patch": "xyz --repo git@github.com:zhangchiqing/bluebird-promisell.git --increment patch"
   },
   "keywords": [
     "Promise",

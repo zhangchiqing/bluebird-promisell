@@ -489,8 +489,9 @@ exports.toPromise = function(predict, toError) {
 //. Takes two functions and return a function that can take a Promise and return a Promise.
 //. If the received Promise is resolved, the first function will be used to map over the resolved value;
 //. If the received Promise is rejected, the second function will be used to map over the Error.
-//
+//.
 //. Like Promise.prototype.then function, but takes functions first.
+//.
 //. ```js
 //. var add1OrReject = bimap(
 //.   function(n) { return n + 1; },

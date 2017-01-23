@@ -149,6 +149,23 @@
 
 var Promise = require('bluebird');
 
+// a -> String
+var getType = function(val) {
+  return val === null      ? 'Null'      :
+         val === undefined ? 'Undefined' :
+         Object.prototype.toString.call(val).slice(8, -1);
+};
+
+// String -> String -> a -> a
+var assertType = function(expectedType, value) {
+  var actualType = getType(value);
+  if (expectedType!== actualType) {
+    throw new TypeError('Expected type to be ' +
+      expectedType + ', but got ' + actualType);
+  }
+  return value;
+};
+
 exports.purep = function(a) {
   return Promise.resolve(a);
 };
@@ -197,6 +214,14 @@ var pipe = function() {
   };
 };
 
+
+var liftp1 = function(fn) {
+  assertType('Function', fn);
+  return function(p) {
+    return p.then(fn);
+  };
+};
+
 //# fmapp :: (a -> b) -> Promise a -> Promise b
 //
 //. Transforms a Promise of value a into a Promise of value b
@@ -206,11 +231,7 @@ var pipe = function() {
 //. promise
 //. 7
 //. ```
-exports.fmapp = function(fn) {
-  return function(p) {
-    return p.then(fn);
-  };
-};
+exports.fmapp = liftp1;
 
 
 //# sequencep :: Array Promise a -> Promise Array a
@@ -223,6 +244,7 @@ exports.fmapp = function(fn) {
 //. [3, 4]
 //. ```
 exports.sequencep = function(arr) {
+  assertType('Array', arr);
   return Promise.all(arr);
 };
 
@@ -238,6 +260,7 @@ exports.sequencep = function(arr) {
 //. [5, 6, 7]
 //. ```
 exports.traversep = function(fn) {
+  assertType('Function', fn);
   return pipe(map(fn), exports.sequencep);
 };
 
@@ -254,6 +277,7 @@ exports.traversep = function(fn) {
 //. 90
 //. ```
 exports.pipep = function(pipes) {
+  assertType('Array', pipes);
   return function(a) {
     return fold(function(accp, fn) {
       return accp.then(fn);
@@ -275,6 +299,7 @@ exports.pipep = function(pipes) {
 //. 35
 //. ```
 exports.liftp = function(fn) {
+  assertType('Function', fn);
   return function() {
     return exports.fmapp(apply(fn))(exports.sequencep(toArray(arguments)));
   };
@@ -292,7 +317,7 @@ exports.liftp = function(fn) {
 //. promise
 //. abc@example.com
 //. ```
-exports.liftp1 = exports.fmapp;
+exports.liftp1 = liftp1;
 
 exports.liftp2 = exports.liftp3 = exports.liftp4 = exports.liftp5 = exports.liftp;
 

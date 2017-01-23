@@ -19,6 +19,7 @@ var foldp = require('./index').foldp;
 var mapError = require('./index').mapError;
 var resolveError = require('./index').resolveError;
 var toPromise = require('./index').toPromise;
+var bimap = require('./index').bimap;
 
 var Promise = require('bluebird');
 
@@ -383,6 +384,30 @@ describe('toPromise', function() {
     return promiseShouldFail(validateGreaterThan0(-10))
     .then(function(error) {
       expect(error.message).to.equal('value is not greater than 0');
+    });
+  });
+});
+
+describe('bimap', function() {
+  var add1OrReject = bimap(
+    function(n) {
+      return n + 1;
+    },
+    function(error) {
+      return Promise.reject(new Error('reject ' + error.message));
+    }
+  );
+
+  it('should resolve', function() {
+    return add1OrReject(Promise.resolve(2)).then(function(r) {
+      expect(r).to.equal(3);
+    });
+  });
+
+  it('should fail', function() {
+    return promiseShouldFail(add1OrReject(Promise.reject(new Error('NaN'))))
+    .then(function(error) {
+      expect(error.message).to.equal('reject NaN');
     });
   });
 });

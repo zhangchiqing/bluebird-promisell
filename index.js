@@ -423,16 +423,7 @@ var loop = function(fn, init, seed) {
   });
 };
 
-//# unfold :: (b -> a -> Promise [b, a?]) -> b -> a -> Promise b
-//. ```js
-//. > unfold(function(b, a) {
-//.     return a > 5 ? Promise.resolve([b, null])
-//.                  : Promise.resolve([b.concat(a), a + 1]);
-//.   })([])(1);
-//. promise
-//. [1,2,3,4,5]
-//. ```
-exports.unfold = exports.unfoldp = function(fn) {
+var _unfold = function(fn) {
   return function(init) {
     return function(seed) {
       return loop(fn, init, seed);
@@ -440,18 +431,18 @@ exports.unfold = exports.unfoldp = function(fn) {
   };
 };
 
-//# whilep :: (a -> (Promise [b, a])?) -> a -> Promise [b]
+//# unfold :: (a -> (Promise [b, a])?) -> a -> Promise [b]
 //. ```js
-//. > whilep(function(a) {
+//. > unfold(function(a) {
 //.     return a > 5 ? Promise.resolve(false)
 //                   : Promise.resolve([a, a + 1]);
 //.   })(1);
 //. promise
 //. [1,2,3,4,5]
 //. ```
-exports.whilep = function(fn) {
+exports.unfold = exports.unfoldp = function(fn) {
   return function(seed) {
-    return exports.unfold(function(accum, s) {
+    return _unfold(function(accum, s) {
       return fn(s)
       .then(function(result) {
         return result === false ? [accum, null]

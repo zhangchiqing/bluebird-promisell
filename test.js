@@ -23,7 +23,6 @@ var resolveError = require('./index').resolveError;
 var toPromise = require('./index').toPromise;
 var bimap = require('./index').bimap;
 var unfoldp = require('./index').unfoldp;
-var whilep = require('./index').whilep;
 
 var Promise = require('bluebird');
 
@@ -375,40 +374,20 @@ describe('foldp', function() {
 });
 
 describe('unfoldp', function() {
-  var folder = function(b, a) {
-    return a > 5 ? Promise.resolve([b, null])
-                 : Promise.resolve([b.concat(a), a + 1]);
-  };
-  it('should resolve', function() {
-    return unfoldp(folder)([])(1)
-    .then(function(r) {
-      expect(r).to.eql([1,2,3,4,5]);
-    });
-  });
-
-  it('should resolve when array is empty', function() {
-    return unfoldp(folder)([])(10)
-    .then(function(r) {
-      expect(r).to.eql([]);
-    });
-  });
-});
-
-describe('whilep', function() {
   var iter = function(a) {
     return a > 5 ? Promise.resolve(false)
                  : Promise.resolve([a, a + 1]);
   };
 
   it('should resolve', function() {
-    return whilep(iter)(1)
+    return unfoldp(iter)(1)
     .then(function(r) {
       expect(r).to.eql([1,2,3,4,5]);
     });
   });
 
   it('should resolve when array is empty', function() {
-    return whilep(iter)(6)
+    return unfoldp(iter)(6)
     .then(function(r) {
       expect(r).to.eql([]);
     });

@@ -431,7 +431,12 @@ var _unfold = function(fn) {
   };
 };
 
-//# unfold :: (a -> (Promise [b, a])?) -> a -> Promise [b]
+//# unfold :: (a -> Promise [b, a]?) -> a -> Promise [b]
+//
+//. Builds a list from a seed value. Accepts an iterator function, which takes the seed and return a Promise.
+//. If the Promise resolves to a `false` value, it will return the list.
+//. If the Promise resolves to a pair, the first item will be appended to the list and the second item will be used as the new seed in the next call to the iterator function.
+//
 //. ```js
 //. > unfold(function(a) {
 //.     return a > 5 ? Promise.resolve(false)

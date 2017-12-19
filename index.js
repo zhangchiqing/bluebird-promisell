@@ -412,6 +412,55 @@ exports.foldp = function(fn) {
   };
 };
 
+var loop = function(fn, init, seed) {
+  return fn(init, seed).then(function(result) {
+    assertType('Array', result);
+    if (result[1] === null) {
+      return result[0];
+    } else {
+      return loop(fn, result[0], result[1]);
+    }
+  });
+};
+
+//# unfold :: (b -> a -> Promise [b, a?]) -> b -> a -> Promise b
+//. ```js
+//. > unfold(function(b, a) {
+//.     return a > 5 ? Promise.resolve([b, null])
+//.                  : Promise.resolve([b.concat(a), a + 1]);
+//.   })([])(1);
+//. promise
+//. [1,2,3,4,5]
+//. ```
+exports.unfold = exports.unfoldp = function(fn) {
+  return function(init) {
+    return function(seed) {
+      return loop(fn, init, seed);
+    };
+  };
+};
+
+//# whilep :: (a -> (Promise [b, a])?) -> a -> Promise [b]
+//. ```js
+//. > whilep(function(a) {
+//.     return a > 5 ? Promise.resolve(false)
+//                   : Promise.resolve([a, a + 1]);
+//.   })(1);
+//. promise
+//. [1,2,3,4,5]
+//. ```
+exports.whilep = function(fn) {
+  return function(seed) {
+    return exports.unfold(function(accum, s) {
+      return fn(s)
+      .then(function(result) {
+        return result === false ? [accum, null]
+                                : [accum.concat(result[0]), result[1]];
+      });
+    })([])(seed);
+  };
+};
+
 //# mapError :: (Error -> Error) -> Promise a -> Promise a
 //
 //. Transform the rejected Error.

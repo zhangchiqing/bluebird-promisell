@@ -439,8 +439,7 @@ var _unfold = function(fn) {
 //
 //. ```js
 //. > unfold(function(a) {
-//.     return a > 5 ? Promise.resolve(false)
-//                   : Promise.resolve([a, a + 1]);
+//.     return a > 5 ? Promise.resolve(false) : Promise.resolve([a, a + 1]);
 //.   })(1);
 //. promise
 //. [1,2,3,4,5]

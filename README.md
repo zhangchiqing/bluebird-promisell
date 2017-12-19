@@ -281,7 +281,21 @@ promise
 10
 ```
 
-<h3 name="mapError"><code><a href="./index.js#L415">mapError :: (Error -> Error) -> Promise a -> Promise a</a></code></h3>
+<h3 name="unfold"><code><a href="./index.js#L434">unfold :: (a -> Promise [b, a]?) -> a -> Promise [b]</a></code></h3>
+
+Builds a list from a seed value. Accepts an iterator function, which takes the seed and return a Promise.
+If the Promise resolves to a `false` value, it will return the list.
+If the Promise resolves to a pair, the first item will be appended to the list and the second item will be used as the new seed in the next call to the iterator function.
+
+```js
+> unfold(function(a) {
+    return a > 5 ? Promise.resolve(false) : Promise.resolve([a, a + 1]);
+  })(1);
+promise
+[1,2,3,4,5]
+```
+
+<h3 name="mapError"><code><a href="./index.js#L459">mapError :: (Error -> Error) -> Promise a -> Promise a</a></code></h3>
 
 Transform the rejected Error.
 
@@ -294,7 +308,7 @@ Transform the rejected Error.
 rejected promise
 ```
 
-<h3 name="resolveError"><code><a href="./index.js#L436">resolveError :: (Error -> b) -> Promise a -> Promise b</a></code></h3>
+<h3 name="resolveError"><code><a href="./index.js#L480">resolveError :: (Error -> b) -> Promise a -> Promise b</a></code></h3>
 
 Recover from a rejected Promise
 
@@ -306,7 +320,7 @@ Recover from a rejected Promise
 promise
 false
 
-<h3 name="toPromise"><code><a href="./index.js#L453">toPromise :: ((a -> Boolean), (a -> Error)) -> a -> Promise a</a></code></h3>
+<h3 name="toPromise"><code><a href="./index.js#L497">toPromise :: ((a -> Boolean), (a -> Error)) -> a -> Promise a</a></code></h3>
 
 Takes a `predict` function and a `toError` function, return a curried
 function that can take a value and return a Promise.
@@ -330,7 +344,7 @@ rejected promise
 Error 'value is not greater than 0'
 ```
 
-<h3 name="bimap"><code><a href="./index.js#L487">bimap :: (a -> Promise b) -> (Error -> Promise b) -> Promise a -> Promise b</a></code></h3>
+<h3 name="bimap"><code><a href="./index.js#L531">bimap :: (a -> Promise b) -> (Error -> Promise b) -> Promise a -> Promise b</a></code></h3>
 
 Takes two functions and return a function that can take a Promise and return a Promise.
 If the received Promise is resolved, the first function will be used to map over the resolved value;

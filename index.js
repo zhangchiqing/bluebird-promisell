@@ -423,16 +423,7 @@ var loop = function(fn, init, seed) {
   });
 };
 
-//# unfold :: (b -> a -> Promise [b, a?]) -> b -> a -> Promise b
-//. ```js
-//. > unfold(function(b, a) {
-//.     return a > 5 ? Promise.resolve([b, null])
-//.                  : Promise.resolve([b.concat(a), a + 1]);
-//.   })([])(1);
-//. promise
-//. [1,2,3,4,5]
-//. ```
-exports.unfold = exports.unfoldp = function(fn) {
+var _unfold = function(fn) {
   return function(init) {
     return function(seed) {
       return loop(fn, init, seed);
@@ -440,18 +431,23 @@ exports.unfold = exports.unfoldp = function(fn) {
   };
 };
 
-//# whilep :: (a -> (Promise [b, a])?) -> a -> Promise [b]
+//# unfold :: (a -> Promise [b, a]?) -> a -> Promise [b]
+//
+//. Builds a list from a seed value. Accepts an iterator function, which takes the seed and return a Promise.
+//. If the Promise resolves to a `false` value, it will return the list.
+//. If the Promise resolves to a pair, the first item will be appended to the list and the second item will be used as the new seed in the next call to the iterator function.
+//
 //. ```js
-//. > whilep(function(a) {
+//. > unfold(function(a) {
 //.     return a > 5 ? Promise.resolve(false)
 //                   : Promise.resolve([a, a + 1]);
 //.   })(1);
 //. promise
 //. [1,2,3,4,5]
 //. ```
-exports.whilep = function(fn) {
+exports.unfold = exports.unfoldp = function(fn) {
   return function(seed) {
-    return exports.unfold(function(accum, s) {
+    return _unfold(function(accum, s) {
       return fn(s)
       .then(function(result) {
         return result === false ? [accum, null]
